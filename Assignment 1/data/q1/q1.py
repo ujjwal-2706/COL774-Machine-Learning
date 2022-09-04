@@ -82,13 +82,13 @@ hypothesis_output = linear_graph(theta[0],theta[1],x_data,mean,sigma)
 # plt.plot(x_data,y_data,'o')
 # plt.plot(x_data,hypothesis_output)
 
-# axes = plt.axes(projection ='3d')
-# axes.set_title("Mesh Plot For Cost Function")
-# axes.set_xlabel('Theta0')
-# axes.set_ylabel('Theta1')
-# axes.plot_surface(mesh_x, mesh_y, mesh_z)
-# # axes.scatter(1,2,-5,color = 'red') # this is used to plot scattered points
-axes = plt.axes()
-cset = plt.contour(mesh_x,mesh_y,mesh_z)
+axes = plt.axes(projection ='3d')
+axes.set_title("Mesh Plot For Cost Function")
+axes.set_xlabel('Theta0')
+axes.set_ylabel('Theta1')
+axes.plot_surface(mesh_x, mesh_y, mesh_z)
+# axes.scatter(1,2,cost_function(1,2,x_data_norm,y_data),color = 'orange') # this is used to plot scattered points
+# axes = plt.axes()
+# cset = plt.contour(mesh_x,mesh_y,mesh_z)
 plt.show()
 
