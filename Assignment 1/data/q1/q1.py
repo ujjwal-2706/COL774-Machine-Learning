@@ -1,15 +1,21 @@
+from cProfile import label
 import numpy as np
 from mpl_toolkits import mplot3d
 from matplotlib import pyplot as plt
 import sys
 
 # File reading part of data set
-linearX_ques1 = open(sys.argv[1],'r')
+linearX_ques1 = open((sys.argv[1]) + "/X.csv",'r') 
 x_data = np.loadtxt(linearX_ques1,delimiter=',',dtype='float32')
 linearX_ques1.close()
-linearY_ques1 = open(sys.argv[2],'r')
+linearY_ques1 = open((sys.argv[1]) + "/Y.csv",'r') 
 y_data = np.loadtxt(linearY_ques1,delimiter=',',dtype='float32')
 linearY_ques1.close()
+
+#test data loaded
+linear_test_X = open((sys.argv[2]) + "/X.csv",'r')
+x_test_data = np.loadtxt(linear_test_X,delimiter=',')
+linear_test_X.close()
 
 #Mean and standard deviation calculated and x_data normalized
 mean = np.mean(x_data)
@@ -44,7 +50,7 @@ def cost_derivate(theta0,theta1,x_data,y_data):
 
 
 # gradient descent implemented and here eta is our learning rate
-def batch_gradient_descent(x_data,y_data,eta):
+def batch_gradient_descent(x_data,y_data,eta,stopping):
     theta0 = 0.0
     theta1 = 0.0
     m = len(x_data)
@@ -52,12 +58,34 @@ def batch_gradient_descent(x_data,y_data,eta):
         derivate = cost_derivate(theta0,theta1,x_data,y_data)
         temp0 = theta0 - ((eta*derivate[0])/m)
         temp1 = theta1 - ((eta*derivate[1])/m)
-        if abs(temp0 - theta0) < 0.00000001 and abs(temp1 - theta1) < 0.00000001:
+        if abs(temp0 - theta0) < stopping and abs(temp1 - theta1) < stopping:
             break
         theta0 = temp0
         theta1 = temp1
     return np.array([theta0,theta1])
 
+#this function will give the different cost function values with changing theta
+def changing_theta_values(x_data,y_data,eta,stopping):
+    theta0 = 0.0
+    theta1 = 0.0
+    m = len(x_data)
+    theta0_list = [theta0]
+    theta1_list = [theta1]
+    cost_values = [cost_function(theta0,theta1,x_data,y_data)]
+    while True:
+        derivate = cost_derivate(theta0,theta1,x_data,y_data)
+        temp0 = theta0 - ((eta*derivate[0])/m)
+        temp1 = theta1 - ((eta*derivate[1])/m)
+        if abs(temp0 - theta0) < stopping and abs(temp1 - theta1) < stopping:
+            break
+        theta0 = temp0
+        theta1 = temp1
+        theta0_list.append(theta0)
+        theta1_list.append(theta1)
+        cost_values.append(cost_function(theta0,theta1,x_data,y_data))
+    return (theta0_list,theta1_list,cost_values)
+
+#function for outputing y_i for a given x_i
 def linear_regression(theta0,theta1,x_value,mean,sigma):
     return theta0 + (theta1*((x_value-mean)/sigma))
 
@@ -70,25 +98,56 @@ def linear_graph(theta0,theta1,x_data,mean,sigma):
         data_output[i] = (theta0 + theta1*x_val)
     return data_output
 
-# create a 2D set of x values for mesh plot
-theta = batch_gradient_descent(x_data_norm,y_data,0.01)
+def output_file(file_name,y_test_value):
+    np.savetxt(file_name,y_test_value,delimiter='\n',fmt="%f")
+
+# training to get theta and outputing values in result_1.txt
+theta = batch_gradient_descent(x_data_norm,y_data,0.01,0.000001)
 print(theta)
+y_test_value = linear_graph(theta[0],theta[1],x_test_data,mean,sigma)
+output_file("result_1.txt",y_test_value)
 
-mesh_x = np.outer(np.linspace(-5.0,5.0,48,dtype='float'),np.ones(48))
-mesh_y = np.outer(np.linspace(-5.0,5.0,48,dtype='float'),np.ones(48)).T
-mesh_z = cost_function(mesh_x,mesh_y,x_data_norm,y_data)
 
-hypothesis_output = linear_graph(theta[0],theta[1],x_data,mean,sigma)
-# plt.plot(x_data,y_data,'o')
-# plt.plot(x_data,hypothesis_output)
+#----------------------------------------------------------------------
+#code to generate 2d plot of given trained data (please uncomment before running)
+# hypothesis_output = linear_graph(theta[0],theta[1],x_data,mean,sigma)
+# plt.plot(x_data,y_data,'o', label = "Initial dataset")
+# plt.plot(x_data,hypothesis_output,label= "Trained model")
+# plt.xlabel("x-value(un-normalized)")
+# plt.ylabel("y-value(wine density)")
+# plt.legend()
+# plt.show()
+#---------------------------------------------------------------------
 
-axes = plt.axes(projection ='3d')
-axes.set_title("Mesh Plot For Cost Function")
-axes.set_xlabel('Theta0')
-axes.set_ylabel('Theta1')
-axes.plot_surface(mesh_x, mesh_y, mesh_z)
-# axes.scatter(1,2,cost_function(1,2,x_data_norm,y_data),color = 'orange') # this is used to plot scattered points
+
+#---------------------------------------------------------------------
+#code to generate mesh plot of given data
+# mesh_x = np.outer(np.linspace(-1.0,2.0,48,dtype='float'),np.ones(48))
+# mesh_y = np.outer(np.linspace(-1.0,2.0,48,dtype='float'),np.ones(48)).T
+# mesh_z = cost_function(mesh_x,mesh_y,x_data_norm,y_data)
+# figure = plt.figure(figsize= (15,15))
+# (change_theta0,change_theta1,cost_values) = changing_theta_values(x_data_norm,y_data,0.01,0.000001) 
+# axes = plt.axes(projection ='3d')
+# axes.set_title("Mesh Plot For Cost Function")
+# axes.set_xlabel('Theta0')
+# axes.set_ylabel('Theta1')
+# axes.plot_surface(mesh_x, mesh_y, mesh_z,alpha= 0.5)
+# axes.scatter(change_theta0,change_theta1,cost_values,color = 'orange',label = "Iterations Changing")
+# plt.legend()
+# plt.show()
+#---------------------------------------------------------------------
+
+
+#---------------------------------------------------------------------
+#code to generate the contour plot
 # axes = plt.axes()
+# mesh_x = np.outer(np.linspace(0.0,2.0,48,dtype='float'),np.ones(48))
+# mesh_y = np.outer(np.linspace(-1.0,2.0,48,dtype='float'),np.ones(48)).T
+# mesh_z = cost_function(mesh_x,mesh_y,x_data_norm,y_data)
+# (change_theta0,change_theta1,cost_values) = changing_theta_values(x_data_norm,y_data,0.01,0.000001)
 # cset = plt.contour(mesh_x,mesh_y,mesh_z)
-plt.show()
-
+# axes.scatter(change_theta0,change_theta1,cost_values,color = 'orange',label = "Iterations Changing")
+# plt.xlabel("theta0 - value")
+# plt.ylabel("theta1 - value")
+# plt.show()
+#---------------------------------------------------------------------
