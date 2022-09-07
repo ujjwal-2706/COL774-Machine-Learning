@@ -14,7 +14,7 @@ linearY_ques1.close()
 
 #test data loaded
 linear_test_X = open((sys.argv[2]) + "/X.csv",'r')
-x_test_data = np.loadtxt(linear_test_X,delimiter=',')
+x_test_data = np.loadtxt(linear_test_X,delimiter=',',dtype='float32')
 linear_test_X.close()
 
 #Mean and standard deviation calculated and x_data normalized

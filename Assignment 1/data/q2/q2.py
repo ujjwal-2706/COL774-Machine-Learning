@@ -22,7 +22,6 @@ y_data = y_data + np.random.normal(0.0,np.sqrt(2.0),1000000)
 def cost_func_batch(batch_size,x_data,y_data,k,theta):
     sum_val = 0.0
     m = len(y_data)
-
     #sum over kth batch
     for i in range(batch_size*k, batch_size*(k+1)):
         val = (y_data[i%m] - np.matmul(x_data[i%m],theta.T))
@@ -33,11 +32,9 @@ def cost_derivative_batch(batch_size,x_data,y_data,k,theta,m):
     derivate = np.zeros((1,3),dtype='float32')
     for i in range(batch_size*k,batch_size*(k+1)):
         derivate += (np.matmul(x_data[i%m],theta.T) - y_data[i%m]) * x_data[i%m]
-    
-    # print(derivate)
     return derivate
 
-def stochastic_gradient_descent(x_data,y_data,eta,batch_size):
+def stochastic_gradient_descent(x_data,y_data,eta,batch_size,iter,avg_iter):
     x_data_new = np.ones((len(y_data),4))
     x_data_new[:,:3] = x_data
     x_data_new[:,3] = y_data.T
@@ -48,25 +45,20 @@ def stochastic_gradient_descent(x_data,y_data,eta,batch_size):
     y_shuffle = x_data_new[:,3]
     k = 0
     total_iter = 0
-    while True:
+    while total_iter < iter:
         iterations = 0
         theta_initial = theta.copy()
         sum_theta = np.zeros((1,3),dtype='float32')
-        while iterations < 1000:
+        while iterations < avg_iter:
             sum_theta += theta
             theta = theta - (eta*cost_derivative_batch(batch_size,x_shuffle,y_shuffle,k,theta,m))/batch_size
             iterations += 1
-            # print(total_iter)
             total_iter+= 1
-            # print(theta)
             k += 1
-        sum_theta = sum_theta/1000
+        sum_theta = sum_theta/avg_iter
         k = k % m
-        # print("found",theta_initial,sum_theta)
-        # print(np.matmul(theta_initial-sum_theta,(theta_initial-sum_theta).T))
         if (np.matmul(theta_initial-sum_theta,(theta_initial-sum_theta).T) <0.001):
             break
-    print(total_iter)
     return theta
 # theta_first = stochastic_gradient_descent(x_data,y_data,0.001,1)
 # print(theta_first)
