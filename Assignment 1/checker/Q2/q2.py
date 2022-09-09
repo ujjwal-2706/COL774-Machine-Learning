@@ -2,13 +2,10 @@ import sys
 import numpy as np
 from mpl_toolkits import mplot3d
 from matplotlib import pyplot as plt
-file = open(sys.argv[1])
-file.readline()
-q2_x = np.loadtxt(file, delimiter=',')
+file = open(sys.argv[1] +'/X.csv','r')
+q2_x = np.loadtxt(file, delimiter=',',dtype='float32')
 q2_x_data= np.ones((len(q2_x),3),dtype='float32')
-q2_x_data[:,1:3] = q2_x[:,:2]
-q2_y_data = np.zeros((len(q2_x),1))
-q2_y_data = q2_x[:,2]
+q2_x_data[:,1:3] = q2_x
 file.close()
 
 #x_data is our generated feature matrix and y_data is the corresponding output vector with noise
@@ -60,8 +57,12 @@ def stochastic_gradient_descent(x_data,y_data,eta,batch_size,iter,avg_iter):
         if (np.matmul(theta_initial-sum_theta,(theta_initial-sum_theta).T) <0.001):
             break
     return theta
-# theta_first = stochastic_gradient_descent(x_data,y_data,0.001,1)
-# print(theta_first)
+theta_first = stochastic_gradient_descent(x_data,y_data,0.001,1,1000000,1000)
+print("theta_first", theta_first)
+def output(file_name,y_test):
+    np.savetxt(file_name,y_test,delimiter='\n',fmt='%f')
+y_test = np.matmul(q2_x_data,theta_first.T)
+output("result_2.txt",y_test)
 # theta_second = stochastic_gradient_descent(x_data,y_data,0.001,100)
 # print(theta_second)
 
@@ -78,15 +79,15 @@ def stochastic_gradient_descent(x_data,y_data,eta,batch_size,iter,avg_iter):
 
 
 #Cost function test
-def cost(x_data,y_data,theta):
-    m = len(y_data)
-    y_data = np.reshape(y_data,(m,1))
-    val = np.matmul(x_data,theta.T)
-    diff = (y_data - np.matmul(x_data,theta.T))
-    return (np.matmul(diff.T,diff)/(2*m))
-theta = stochastic_gradient_descent(q2_x_data,q2_y_data,0.001,1)
-print(theta)
-print(cost(q2_x_data,q2_y_data,theta))
+# def cost(x_data,y_data,theta):
+#     m = len(y_data)
+#     y_data = np.reshape(y_data,(m,1))
+#     val = np.matmul(x_data,theta.T)
+#     diff = (y_data - np.matmul(x_data,theta.T))
+#     return (np.matmul(diff.T,diff)/(2*m))
+# theta = stochastic_gradient_descent(q2_x_data,q2_y_data,0.001,1)
+# print(theta)
+# print(cost(q2_x_data,q2_y_data,theta))
 # theta = stochastic_gradient_descent(q2_x_data,q2_y_data,0.001,100)
 # print(theta)
 # theta_third = stochastic_gradient_descent(x_data,y_data,0.1,10000)

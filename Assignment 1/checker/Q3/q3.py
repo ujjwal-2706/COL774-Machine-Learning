@@ -73,8 +73,9 @@ def final_hypothesis(x1,mean_x1,mean_x2,sigma_x1,sigma_x2):
 
 def output_file(filename,y_test):
     file = open(filename,'w')
-    for i in range(len(y_data)):
-        if y_data[i] > 0.0 :
+    y_test = 1000 * y_test
+    for i in range(len(y_test)):
+        if y_test[i] > 0.0 :
             file.write("1\n")
         else:
             file.write("0\n")
