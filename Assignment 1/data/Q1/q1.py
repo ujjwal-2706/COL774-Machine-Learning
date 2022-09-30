@@ -103,7 +103,7 @@ def output_file(file_name,y_test_value):
 
 # training to get theta and outputing values in result_1.txt
 theta = batch_gradient_descent(x_data_norm,y_data,0.01,0.000001)
-print(theta)
+# print(theta)
 y_test_value = linear_graph(theta[0],theta[1],x_test_data,mean,sigma)
 output_file("result_1.txt",y_test_value)
 

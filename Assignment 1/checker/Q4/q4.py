@@ -45,6 +45,8 @@ cov_inv_mu = np.matmul(np.linalg.pinv(cov),mu0.T)
 def linear_separator(x1):
     return mean_x2 + ((-1* cov_inv_mu[0])/((cov_inv_mu[1]) * sigma_x1)) * (x1 - mean_x1) * sigma_x2
 
+def linear_separator_norm(x1):
+    return ((-1* cov_inv_mu[0])/((cov_inv_mu[1]))) * (x1)
 
 #in order to write the quadratic we use the coefficient and then calculate the expression
 def quadratic_separtor(x0,x1):
@@ -87,16 +89,18 @@ output("result_4.txt",y_test)
 
 #------------------------------------------------------------------
 #code for plotting quadratic separtor
-# x0_val = np.linspace(-3,3,1000)
-# x1_val = np.linspace(-3,3,1000)
-# x0_val,x1_val = np.meshgrid(x0_val,x1_val)
-# z = quadratic_separtor(x0_val,x1_val)
-# plt.figure()
-# plt.plot(x_filter_alaska[:,0],x_filter_alaska[:,1],'o', label= 'Alaska')
-# plt.plot(x_filter_canada[:,0],x_filter_canada[:,1],'^',label= 'Canada')
-# plt.contour(x0_val,x1_val,z,[0.0])
-# plt.xlabel("x0 value(normalized)")
-# plt.ylabel("x1 value(normalized)")
-# plt.title(label = "Data Set vs Quadratic Separator",color='blue')
-# plt.legend()
-# plt.show()
+x0_val = np.linspace(-3,3,1000)
+x_value = np.linspace(-3,3)
+x1_val = np.linspace(-3,3,1000)
+x0_val,x1_val = np.meshgrid(x0_val,x1_val)
+z = quadratic_separtor(x0_val,x1_val)
+plt.figure()
+plt.plot(x_value,linear_separator_norm(x_value))
+plt.plot(x_filter_alaska[:,0],x_filter_alaska[:,1],'o', label= 'Alaska')
+plt.plot(x_filter_canada[:,0],x_filter_canada[:,1],'^',label= 'Canada')
+plt.contour(x0_val,x1_val,z,[0.0])
+plt.xlabel("x0 value(normalized)")
+plt.ylabel("x1 value(normalized)")
+plt.title(label = "Data Set vs Quadratic Separator vs Linear Separator",color='blue')
+plt.legend()
+plt.show()

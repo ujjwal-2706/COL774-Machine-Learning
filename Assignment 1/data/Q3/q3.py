@@ -66,7 +66,7 @@ def newton_method(x_data,y_data,stopping):
     return theta
 
 theta = newton_method(x_data_norm,y_data,0.0001)
-print(theta)
+# print(theta)
 def final_hypothesis(x1,mean_x1,mean_x2,sigma_x1,sigma_x2):
     return mean_x2 + ((theta[0] + theta[1] * ((x1-mean_x1)/sigma_x1))/(-1*theta[2])) * (sigma_x2)
 
@@ -91,12 +91,13 @@ output_file("result_3.txt",y_test)
 #Plotting code 
 # x_data_0 = x_data[y_data == 0]
 # x_data_1 = x_data[y_data == 1]
-# plt.plot(x_data_0[:,1],x_data_0[:,2],'o')
-# plt.plot(x_data_1[:,1],x_data_1[:,2],'^')
+# plt.plot(x_data_0[:,1],x_data_0[:,2],'o',label='0 value')
+# plt.plot(x_data_1[:,1],x_data_1[:,2],'^',label= '1 value')
 # x = np.linspace(0,10)
 # plt.plot(x,final_hypothesis(x,mean_x1,mean_x2,sigma_x1,sigma_x2),color= 'red')
 # plt.xlabel("x1-value")
 # plt.ylabel("x2-value")
+# plt.legend()
 # plt.title(label = "Separator for Logistic Regression",color = "blue")
 # plt.show()
 #----------------------------------------------
