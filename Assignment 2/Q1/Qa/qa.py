@@ -34,8 +34,9 @@ def filter_text(text_data):
 
 #this function will read the review file and return a correponding hashmap
 def freqWords(file_name):
-    file = open(file_name,'r')
+    file = open(file_name,'r',encoding='utf-8')
     text_data = file.read()
+    file.close()
     word_map = filter_text(text_data)
     return word_map
 def read_file_map(train_path):
