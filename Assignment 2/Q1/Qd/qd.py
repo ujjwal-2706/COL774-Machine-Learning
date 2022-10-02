@@ -5,6 +5,12 @@ import numpy as np
 from wordcloud import WordCloud, STOPWORDS
 import matplotlib.pyplot as plt
 import random
+from nltk.stem import PorterStemmer
+from nltk.tokenize import word_tokenize
+from nltk.corpus import stopwords
+stemmer = PorterStemmer()
+english_stop_words = set(stopwords.words('english'))
+
 start = time.time()
 train_path = sys.argv[1]
 train_path_neg = train_path + "/neg"
@@ -28,10 +34,12 @@ def filter_text(text_data):
             index_end += 1
         word = text_data[index_start:index_end]
         if word != "br" and index_start < len(text_data):
-            if word in word_freq:
-                word_freq[word]+= 1
-            else:
-                word_freq[word] = 1
+            word_final = stemmer.stem(word)
+            if word_final not in english_stop_words:
+                if word_final in word_freq:
+                    word_freq[word_final]+= 1
+                else:
+                    word_freq[word_final] = 1
         index_start = index_end+1
     return word_freq
 
@@ -97,14 +105,14 @@ def predict_directory(file_dir):
             negative += 1
     return (positive,negative)
 
-# answer = predict_directory("../part1_data/train/neg")
-# print(answer)
-# answer = predict_directory("../part1_data/train/pos")
-# print(answer)
-# answer = predict_directory("../part1_data/test/pos")
-# print(answer)
-# answer = predict_directory("../part1_data/test/neg")
-# print(answer)
+answer = predict_directory("../part1_data/train/neg")
+print(answer)
+answer = predict_directory("../part1_data/train/pos")
+print(answer)
+answer = predict_directory("../part1_data/test/pos")
+print(answer)
+answer = predict_directory("../part1_data/test/neg")
+print(answer)
 end = time.time()
 print(end - start)
 
