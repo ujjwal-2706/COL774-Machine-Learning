@@ -28,6 +28,8 @@ train_data_norm = np.array(train_data,dtype= np.double)
 test_data = np.zeros((2*data_points_test//5,3072),dtype=np.double)
 mean_train = np.zeros((1,3072),dtype=np.double)
 std_train = np.zeros((1,3072),dtype=np.double)
+test_data[0:(data_points_test//5),:] = class_1_test
+test_data[(data_points_test//5):(2*data_points_test//5),:] = class_2_test
 for col in range(3072):
     mean = np.mean(train_data[:,col])
     std = np.std(train_data[:,col])
@@ -122,7 +124,6 @@ def predict(x_value):
     else:
         return -1
 print(np.shape(w_transpose))
-# print(np.shape(train_data_norm[0,0]))
 def final_train_prediction(m):
     correct = 0
     for i in range(m):
@@ -131,7 +132,8 @@ def final_train_prediction(m):
             correct += 1
     return correct
 
-#on train data only 5 points wrongly classified
+#on train data 3995 correct out of 4000
+#on test data 1495 correct out of 4000
 print(final_train_prediction(2000))
 
 # alpha_gaussian = np.array(optimize_gaussian(4000))
