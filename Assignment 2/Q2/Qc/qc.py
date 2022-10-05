@@ -1,6 +1,7 @@
+from random import gauss
+from sklearn import svm
 import pandas as pd
 import numpy as np
-import cvxopt
 import time
 start_time = time.time()
 obj = pd.read_pickle(r'../part2_data/train_data.pickle')
@@ -52,63 +53,29 @@ for i in range((2*data_points//5)):
     else:
         y_data.append(1.0 * 1.0)
 y = np.array(y_data)
-y = 1.0 * y.reshape(-1,1) 
-def optimize_linear(m):
-    new_train = np.array(train_data_norm)
-    new_train[0:m//2,:] = -1.0 * new_train[0:m//2,:]
-    p_val =np.matmul(new_train,new_train.T)
-    P = cvxopt.matrix(p_val)
-    q = cvxopt.matrix(-np.ones((m, 1)))
-    g_val = 1.0 * np.zeros((2*m,m))
-    g_val[0:m,:] = np.identity(m)
-    g_val[m:2*m,:] = -1.0 * np.identity(m)
-    h_val = np.zeros((2*m))
-    h_val[:m] = 1.0 * np.ones(m)
-    G = cvxopt.matrix(g_val)
-    h = cvxopt.matrix(h_val)
-    A = cvxopt.matrix(y.reshape(1, -1))
-    b = cvxopt.matrix(np.array([0.0]))
-    sol = cvxopt.solvers.qp(P,q,G,h,A,b)
-    return sol['x']
-#alpha obtained here is of shape (4000,1)
-alpha = np.array(optimize_linear(4000))
-support_vector_indices = []
-for i in range(len(alpha)):
-    if alpha[i,0] > 0.00001:
-        support_vector_indices.append(i)
+#Create a svm Classifier
+linear_svm = svm.SVC(kernel='linear') # Linear Kernel
+gaussian_svm = svm.SVC(kernel='rbf') # gaussian kernel
 
-#1398 support vectors coming
-support_vectors = train_data_norm[support_vector_indices]
-y_val_support_vectors = y[support_vector_indices]
-#now we will find w and b values of svm
-def normal_line(m):
-    new_data = np.array(train_data_norm)
-    new_data[0:m//2] = -1.0 * train_data_norm[0:m//2]
-    return (alpha.T @ new_data)
-w_transpose = normal_line(4000)
-def constant_line():
-    all_val = y_val_support_vectors - (support_vectors @ w_transpose.T)
-    num_support_vectors = len(all_val)
-    row_vector = np.ones((1,num_support_vectors))
-    return (row_vector @ all_val) / num_support_vectors
-b = constant_line()
-def predict(x_value):
-    value = (w_transpose @ x_value.T) + b
-    if value >= 0 :
-        return 1
-    else:
-        return -1
-def final_train_prediction(m):
+#Train the model using the training sets
+linear_svm.fit(train_data_norm, y)
+gaussian_svm.fit(train_data_norm,y)
+print(len(linear_svm.support_))
+print(len(gaussian_svm.support_))
+#Predict the response for test dataset
+y_pred_linear = linear_svm.predict(test_data_norm)
+y_pred_gaussian = gaussian_svm.predict(test_data_norm)
+def accuracy(m,y_pred):
     correct = 0
     for i in range(m):
-        value = predict((test_data_norm[i,:]))
-        if value == y_test_val[i]:
-            correct += 1
-    return correct
-
-#on train data 3995 correct out of 4000
-#on test data 1495 correct out of 2000
-print(final_train_prediction(2000))
-
+        if i < m//2:
+            if y_pred[i] == -1:
+                correct+= 1
+        else:
+            if y_pred[i] == 1:
+                correct += 1
+    return (100*correct) / m
+print(accuracy(2000,y_pred_linear))
+print(accuracy(2000,y_pred_gaussian))
 end_time = time.time()
-print(end_time-start_time)
+print(end_time - start_time)

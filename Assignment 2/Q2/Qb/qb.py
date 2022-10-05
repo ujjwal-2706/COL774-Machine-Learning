@@ -53,10 +53,14 @@ for i in range((2*data_points//5)):
         y_data.append(1.0 * 1.0)
 y = np.array(y_data)
 y = 1.0 * y.reshape(-1,1) 
-def optimize_linear(m):
-    new_train = np.array(train_data_norm)
-    new_train[0:m//2,:] = -1.0 * new_train[0:m//2,:]
-    p_val =np.matmul(new_train,new_train.T)
+def gaussian_kernal(x,z):
+    diff = x-z
+    return np.exp(-0.001 * (diff @ diff.T ))
+def optimize_gaussian(m):
+    p_val =np.zeros((m,m))
+    for i in range(m):
+        for j in range(m):
+            p_val[i,j] = 1.0 * y[i] * y[j] * gaussian_kernal(train_data_norm[i,:],train_data_norm[j,:])
     P = cvxopt.matrix(p_val)
     q = cvxopt.matrix(-np.ones((m, 1)))
     g_val = 1.0 * np.zeros((2*m,m))
@@ -70,45 +74,47 @@ def optimize_linear(m):
     b = cvxopt.matrix(np.array([0.0]))
     sol = cvxopt.solvers.qp(P,q,G,h,A,b)
     return sol['x']
+
 #alpha obtained here is of shape (4000,1)
-alpha = np.array(optimize_linear(4000))
+alpha = np.array(optimize_gaussian(4000))
 support_vector_indices = []
 for i in range(len(alpha)):
     if alpha[i,0] > 0.00001:
         support_vector_indices.append(i)
 
-#1398 support vectors coming
+#2915 support vectors coming
 support_vectors = train_data_norm[support_vector_indices]
 y_val_support_vectors = y[support_vector_indices]
-#now we will find w and b values of svm
-def normal_line(m):
-    new_data = np.array(train_data_norm)
-    new_data[0:m//2] = -1.0 * train_data_norm[0:m//2]
-    return (alpha.T @ new_data)
-w_transpose = normal_line(4000)
-def constant_line():
-    all_val = y_val_support_vectors - (support_vectors @ w_transpose.T)
-    num_support_vectors = len(all_val)
-    row_vector = np.ones((1,num_support_vectors))
-    return (row_vector @ all_val) / num_support_vectors
-b = constant_line()
-def predict(x_value):
-    value = (w_transpose @ x_value.T) + b
+print(len(support_vectors))
+#now we will find wTx values and b values of svm
+def normal_product(m,x_data):
+    answer = 0
+    for i in range(m):
+        answer += (alpha[i,0] * y[i] * gaussian_kernal(train_data_norm[i,:],x_data))
+    return answer
+def constant_line(m):
+    answer = 0
+    for i in range(len(support_vectors)):
+        answer = (y[i] - normal_product(m,support_vectors[i,:]))
+    return answer / len(support_vectors)
+b = constant_line(4000)
+def predict(m,x_value):
+    value = normal_product(m,x_value) + b
     if value >= 0 :
         return 1
     else:
         return -1
-def final_train_prediction(m):
+def final_train_prediction(m,test):
     correct = 0
-    for i in range(m):
-        value = predict((test_data_norm[i,:]))
+    for i in range(test):
+        value = predict(m,(test_data_norm[i,:]))
         if value == y_test_val[i]:
             correct += 1
     return correct
 
 #on train data 3995 correct out of 4000
-#on test data 1495 correct out of 2000
-print(final_train_prediction(2000))
+#on test data 1639 correct out of 2000
+print(final_train_prediction(4000,2000))
 
 end_time = time.time()
 print(end_time-start_time)
