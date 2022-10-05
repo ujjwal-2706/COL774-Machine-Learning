@@ -2,34 +2,55 @@ import pandas as pd
 import numpy as np
 import cvxopt
 import time
+from sklearn import metrics
 start_time = time.time()
 obj = pd.read_pickle(r'../part2_data/train_data.pickle')
 obj_test = pd.read_pickle(r'../part2_data/test_data.pickle')
 (data_points_test,dim1_test,dim2_test,dim3_test) = np.shape(obj_test['data'])
 (data_points,dim1,dim2,dim3) = np.shape(obj['data'])
-class_1 = np.zeros((data_points//5,3072),dtype=np.double)
-class_2 = np.zeros((data_points//5,3072),dtype=np.double)
-class_1_test = np.zeros((data_points_test//5,3072),dtype=np.double)
-class_2_test = np.zeros((data_points_test//5,3072),dtype=np.double)
+index_1 = []
+index_2 = []
+y_data = []
+y_test_val = []
+for i in range(data_points):
+    if obj['labels'][i] == 1:
+        index_1.append(i)
+        y_data.append(-1.0)
+    elif obj['labels'][i] == 2:
+        index_2.append(i)
+        y_data.append(1.0)
+index_1_test = []
+index_2_test = []
+for i in range(data_points_test):
+    if obj_test['labels'][i] == 1:
+        index_1_test.append(i)
+        y_test_val.append(-1.0)
+    elif obj_test['labels'][i] == 2:
+        index_2_test.append(i)
+        y_test_val.append(1.0)
+class_1 = np.zeros((len(index_1),3072),dtype=np.double)
+class_2 = np.zeros((len(index_2),3072),dtype=np.double)
+class_1_test = np.zeros((len(index_1_test),3072),dtype=np.double)
+class_2_test = np.zeros((len(index_2_test),3072),dtype=np.double)
 #training data of class 1 and class 2 obtained
-class_1 = (obj['data'][data_points//5:(2*data_points)//5]).reshape(data_points//5,-1)
+class_1 = (obj['data'][index_1]).reshape(len(index_1),-1)
 class_1 = class_1.astype(np.double)
-class_2 = (obj['data'][(2*data_points//5):(3*data_points//5)]).reshape(data_points//5,-1)
+class_2 = (obj['data'][index_2]).reshape(len(index_2),-1)
 class_2 = class_2.astype(np.double)
-class_1_test = (obj_test['data'][data_points_test//5:(2*data_points_test)//5]).reshape(data_points_test//5,-1)
+class_1_test = (obj_test['data'][index_1_test]).reshape(len(index_1_test),-1)
 class_1_test = class_1_test.astype(np.double)
-class_2_test= (obj_test['data'][(2*data_points_test//5):(3*data_points_test//5)]).reshape(data_points_test//5,-1)
+class_2_test= (obj_test['data'][index_2_test]).reshape(len(index_2_test),-1)
 class_2_test = class_2_test.astype(np.double)
-train_data = np.zeros(((2*data_points//5),3072),dtype=np.double)
-train_data[0:(data_points//5),:] = class_1
-train_data[(data_points//5):(2*data_points//5),:] = class_2
+train_data = np.zeros((len(index_1)+len(index_2),3072),dtype=np.double)
+train_data[0:len(index_1),:] = class_1
+train_data[len(index_1):(len(index_1)+len(index_2)),:] = class_2
 train_data_norm = np.array(train_data,dtype= np.double)
 
-test_data = np.zeros((2*data_points_test//5,3072),dtype=np.double)
+test_data = np.zeros((len(index_1_test) + len(index_2_test),3072),dtype=np.double)
 mean_train = np.zeros((1,3072),dtype=np.double)
 std_train = np.zeros((1,3072),dtype=np.double)
-test_data[0:(data_points_test//5),:] = class_1_test
-test_data[(data_points_test//5):(2*data_points_test//5),:] = class_2_test
+test_data[0:len(index_1_test),:] = class_1_test
+test_data[len(index_1_test):len(index_1_test)+len(index_2_test),:] = class_2_test
 for col in range(3072):
     mean = np.mean(train_data[:,col])
     std = np.std(train_data[:,col])
@@ -37,30 +58,27 @@ for col in range(3072):
     std_train[0,col] = std
     train_data_norm[:,col] = (train_data[:,col] - mean)/(std)
 def normalize(test_data):
-    test_data_norm = np.zeros((2*data_points_test//5,3072),dtype=np.double)
-    for i in range(2*data_points_test//5):
+    test_data_norm = np.zeros(np.shape(test_data),dtype=np.double)
+    for i in range((np.shape(test_data)[0])):
         test_data_norm[i,:] = (test_data[i,:] - mean_train)/(std_train)
     return test_data_norm
 test_data_norm = normalize(test_data)
-y_test_val = [1.0 for i in range(2*data_points_test//5)]
-for i in range(data_points_test//5):
-    y_test_val[i] = -1.0
-y_data = []
-for i in range((2*data_points//5)):
-    if i <(data_points//5):
-        y_data.append(-1.0 * 1.0)
-    else:
-        y_data.append(1.0 * 1.0)
 y = np.array(y_data)
-y = 1.0 * y.reshape(-1,1) 
+y = 1.0 * y.reshape(-1,1)
 def gaussian_kernal(x,z):
     diff = x-z
     return np.exp(-0.001 * (diff @ diff.T ))
+def gaussian_function(x):
+    return np.exp(-0.001 * x * x)
+
+m = len(index_1) + len(index_2)
+kernel_matrix =  gaussian_function(metrics.pairwise_distances(train_data_norm))
+
 def optimize_gaussian(m):
     p_val =np.zeros((m,m))
     for i in range(m):
         for j in range(m):
-            p_val[i,j] = 1.0 * y[i] * y[j] * gaussian_kernal(train_data_norm[i,:],train_data_norm[j,:])
+            p_val[i,j] = 1.0 * y[i] * y[j] * kernel_matrix[i,j]
     P = cvxopt.matrix(p_val)
     q = cvxopt.matrix(-np.ones((m, 1)))
     g_val = 1.0 * np.zeros((2*m,m))
@@ -87,19 +105,25 @@ support_vectors = train_data_norm[support_vector_indices]
 y_val_support_vectors = y[support_vector_indices]
 print(len(support_vectors))
 #now we will find wTx values and b values of svm
-def normal_product(m,x_data):
-    answer = 0
-    for i in range(m):
-        answer += (alpha[i,0] * y[i] * gaussian_kernal(train_data_norm[i,:],x_data))
-    return answer
+def normal_product(m,x_data,train_truth,train_index):
+    if train_truth :
+        answer = 0
+        for i in range(m):
+            answer += (alpha[i,0] * y[i] * kernel_matrix[i,train_index])
+        return answer
+    else:
+        answer = 0
+        for i in range(m):
+            answer += (alpha[i,0] * y[i] * gaussian_kernal(train_data_norm[i,:],x_data))
+        return answer
 def constant_line(m):
     answer = 0
     for i in range(len(support_vectors)):
-        answer = (y[i] - normal_product(m,support_vectors[i,:]))
+        answer = (y[i] - normal_product(m,support_vectors[i,:],True,support_vector_indices[i]))
     return answer / len(support_vectors)
 b = constant_line(4000)
 def predict(m,x_value):
-    value = normal_product(m,x_value) + b
+    value = normal_product(m,x_value,False,-1) + b
     if value >= 0 :
         return 1
     else:
@@ -110,7 +134,7 @@ def final_train_prediction(m,test):
         value = predict(m,(test_data_norm[i,:]))
         if value == y_test_val[i]:
             correct += 1
-    return correct
+    return (100*correct)/test
 
 #on train data 3995 correct out of 4000
 #on test data 1639 correct out of 2000
