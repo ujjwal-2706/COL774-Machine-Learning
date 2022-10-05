@@ -1,4 +1,3 @@
-from random import gauss
 from sklearn import svm
 import pandas as pd
 import numpy as np
