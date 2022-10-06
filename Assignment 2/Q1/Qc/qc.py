@@ -2,9 +2,9 @@ import os
 import sys
 import time
 import numpy as np
-from wordcloud import WordCloud, STOPWORDS
 import matplotlib.pyplot as plt
 import random
+from sklearn.metrics import confusion_matrix,ConfusionMatrixDisplay 
 start = time.time()
 train_path = sys.argv[1]
 test_path = sys.argv[2]
@@ -66,7 +66,6 @@ positive_map = read_file_map(train_path_pos)
 total_word_neg = total_words(negative_map)
 total_word_pos = total_words(positive_map)
 phi = len(os.listdir(train_path_pos)) / (len(os.listdir(train_path_pos)) + len(os.listdir(train_path_neg)))
-#any parameter theta_l/1 is now positive_map[word_l] +1/total_word_pos + |v| 
 
 def predict(fileName):
     freq = freqWords(fileName)
@@ -88,91 +87,59 @@ def predict(fileName):
     else:
         return -1
 
-def predict_directory(file_dir):
-    files = os.listdir(file_dir)
-    positive = 0
-    negative = 0
-    for file in files:
-        prediction = predict(file_dir + '/' + file)
-        if prediction == 1:
-            positive += 1
-        else:
-            negative += 1
-    return (positive,negative)
 
-(train_neg_positive,train_neg_negative) = predict_directory(train_path_neg)
-(train_pos_positive,train_pos_negative) = predict_directory(train_path_pos)
-print(f"Train accuracy : {(train_neg_negative + train_pos_positive)/(train_neg_negative + train_pos_positive + train_neg_positive + train_pos_negative)}")
-(test_neg_positive,test_neg_negative) = predict_directory(test_path_neg)
-(test_pos_positive,test_pos_negative) = predict_directory(test_path_pos)
-print(f"Test accuracy : {(test_neg_negative + test_pos_positive)/(test_neg_negative + test_pos_positive + test_neg_positive + test_pos_negative)}")
+def prediction_random_array(file_dir):
+    files = os.listdir(file_dir)
+    answer = []
+    for i in range(len(files)):
+        prediction = random.randint(0,1)
+        if prediction == 1:
+            answer.append(prediction)
+        else:
+            answer.append(-1)
+    return answer
+
+def prediction_positive_array(file_dir):
+    files = os.listdir(file_dir)
+    answer = [1 for i in range(len(files))]
+    return answer
+
+def prediction_naive_array(file_dir):
+    files = os.listdir(file_dir)
+    answer = []
+    for i in range(len(files)):
+        prediction = predict(file_dir + '/' + files[i])
+        answer.append(prediction)
+    return answer
+
+answer_test_neg_naive = prediction_naive_array(test_path_neg)
+answer_test_pos_naive = prediction_naive_array(test_path_pos)
+answer_test_neg_random = prediction_random_array(test_path_neg)
+answer_test_pos_random = prediction_random_array(test_path_pos)
+answer_test_neg_positive = prediction_positive_array(test_path_neg)
+answer_test_pos_positive = prediction_positive_array(test_path_pos)
+original_answer = []
+for i in range(len(answer_test_neg_naive)):
+    original_answer.append(-1)
+for i in range(len(answer_test_pos_naive)):
+    original_answer.append(1)
+naive_result = answer_test_neg_naive + answer_test_pos_naive
+random_result = answer_test_neg_random + answer_test_pos_random
+positive_result = answer_test_neg_positive + answer_test_pos_positive
+cm_naive = confusion_matrix(original_answer,naive_result)
+disp_naive = ConfusionMatrixDisplay(confusion_matrix=cm_naive)
+disp_naive.plot()
+plt.savefig("confusion_naive.png",dpi = 1000)
+
+cm_random = confusion_matrix(original_answer,random_result)
+disp_random = ConfusionMatrixDisplay(confusion_matrix=cm_random)
+disp_random.plot()
+plt.savefig("confusion_random.png",dpi = 1000)
+
+cm_positive = confusion_matrix(original_answer,positive_result)
+disp_positive = ConfusionMatrixDisplay(confusion_matrix=cm_positive)
+disp_positive.plot()
+plt.savefig("confusion_positive.png",dpi = 1000)
 
 end = time.time()
 print(end - start)
-
-
-#--------------------------------------
-#now we will do the word cloud plotting
-positive_string = []
-negative_string = []
-for word in positive_map:
-    for value in range(positive_map[word]):
-        positive_string.append(word)
-        positive_string.append(" ")
-for word in negative_map:
-    for value in range(negative_map[word]):
-        negative_string.append(word)
-        negative_string.append(" ")
-positive_words = "".join(positive_string)
-negative_words = "".join(negative_string)
-# stopword = set(STOPWORDS)
-positive_cloud = WordCloud(width = 800, height = 800,background_color ='white',stopwords = [],collocations=False,min_font_size = 10).generate(positive_words)
-negative_cloud = WordCloud(width = 800, height = 800,background_color ='white',stopwords = [],collocations = False,min_font_size = 10).generate(negative_words)                     
-plt.figure(figsize = (8, 8), facecolor = None)
-plt.imshow(positive_cloud)
-plt.tight_layout(pad = 0)
-plt.axis("off")
-plt.savefig("pos_word_cloud.png",dpi = 1000)
-plt.imshow(negative_cloud)
-plt.axis("off")
-plt.savefig("neg_word_cloud.png",dpi = 1000)
-#------------------------------------
-
-
-def predict_random(file_dir):
-    files = os.listdir(file_dir)
-    positive = 0
-    negative = 0
-    for file in files:
-        prediction = random.randint(0,1)
-        if prediction == 1:
-            positive += 1
-        else:
-            negative += 1
-    return (positive,negative)
-
-def predict_positive(file_dir):
-    files = os.listdir(file_dir)
-    positive = len(files)
-    negative = 0
-    return (positive,negative)
-
-# answer = predict_random("../part1_data/train/neg")
-# print(answer)
-# answer = predict_random("../part1_data/train/pos")
-# print(answer)
-# answer = predict_random("../part1_data/test/pos")
-# print(answer)
-# answer = predict_random("../part1_data/test/neg")
-# print(answer)
-# print("-------------------------------------")
-
-# answer = predict_positive("../part1_data/train/neg")
-# print(answer)
-# answer = predict_positive("../part1_data/train/pos")
-# print(answer)
-# answer = predict_positive("../part1_data/test/pos")
-# print(answer)
-# answer = predict_positive("../part1_data/test/neg")
-# print(answer)
-# print("-------------------------------------")
