@@ -6,15 +6,17 @@ from wordcloud import WordCloud, STOPWORDS
 import matplotlib.pyplot as plt
 import random
 from nltk.stem import PorterStemmer
-from nltk.tokenize import word_tokenize
 from nltk.corpus import stopwords
 stemmer = PorterStemmer()
 english_stop_words = set(stopwords.words('english'))
-
 start = time.time()
 train_path = sys.argv[1]
+test_path = sys.argv[2]
 train_path_neg = train_path + "/neg"
 train_path_pos =  train_path + "/pos"
+test_path_neg = test_path + "/neg"
+test_path_pos = test_path + "/pos"
+
 
 def letter_check(letter):
     if (letter >= 'a' and letter <= 'z') or (letter >= 'A' and letter <= 'Z') or (ord(letter) == 39) : #39 is for ' letter
@@ -105,78 +107,38 @@ def predict_directory(file_dir):
             negative += 1
     return (positive,negative)
 
-answer = predict_directory("../part1_data/train/neg")
-print(answer)
-answer = predict_directory("../part1_data/train/pos")
-print(answer)
-answer = predict_directory("../part1_data/test/pos")
-print(answer)
-answer = predict_directory("../part1_data/test/neg")
-print(answer)
+(train_neg_positive,train_neg_negative) = predict_directory(train_path_neg)
+(train_pos_positive,train_pos_negative) = predict_directory(train_path_pos)
+print(f"Train accuracy : {(train_neg_negative + train_pos_positive)/(train_neg_negative + train_pos_positive + train_neg_positive + train_pos_negative)}")
+(test_neg_positive,test_neg_negative) = predict_directory(test_path_neg)
+(test_pos_positive,test_pos_negative) = predict_directory(test_path_pos)
+print(f"Test accuracy : {(test_neg_negative + test_pos_positive)/(test_neg_negative + test_pos_positive + test_neg_positive + test_pos_negative)}")
 end = time.time()
 print(end - start)
 
-
 #--------------------------------------
 #now we will do the word cloud plotting
-# positive_string = []
-# negative_string = []
-# for word in positive_map:
-#     for value in range(positive_map[word]):
-#         positive_string.append(word)
-#         positive_string.append(" ")
-# for word in negative_map:
-#     for value in range(negative_map[word]):
-#         negative_string.append(word)
-#         negative_string.append(" ")
-# positive_words = "".join(positive_string)
-# negative_words = "".join(negative_string)
-# stopword = set(STOPWORDS)
-# positive_cloud = WordCloud(width = 800, height = 800,background_color ='white',stopwords = stopword,collocations=False,min_font_size = 10).generate(positive_words)
-# # negative_cloud = WordCloud(width = 800, height = 800,background_color ='white',stopwords = stopword,min_font_size = 10).generate(negative_words) 
-# # plot the WordCloud image                      
-# plt.figure(figsize = (8, 8), facecolor = None)
-# plt.imshow(positive_cloud)
-# plt.axis("off")
-# plt.tight_layout(pad = 0)
-# plt.show()
+positive_string = []
+negative_string = []
+for word in positive_map:
+    for value in range(positive_map[word]):
+        positive_string.append(word)
+        positive_string.append(" ")
+for word in negative_map:
+    for value in range(negative_map[word]):
+        negative_string.append(word)
+        negative_string.append(" ")
+positive_words = "".join(positive_string)
+negative_words = "".join(negative_string)
+stopword = set(STOPWORDS)
+positive_cloud = WordCloud(width = 800, height = 800,background_color ='white',stopwords = stopword,collocations=False,min_font_size = 10).generate(positive_words)
+negative_cloud = WordCloud(width = 800, height = 800,background_color ='white',stopwords = stopword,collocations = False,min_font_size = 10).generate(negative_words)                     
+plt.figure(figsize = (8, 8), facecolor = None)
+plt.imshow(positive_cloud)
+plt.tight_layout(pad = 0)
+plt.axis("off")
+plt.savefig("pos_word_cloud.png",dpi = 1000)
+plt.imshow(negative_cloud)
+plt.axis("off")
+plt.savefig("neg_word_cloud.png",dpi = 1000)
 #------------------------------------
-
-
-def predict_random(file_dir):
-    files = os.listdir(file_dir)
-    positive = 0
-    negative = 0
-    for file in files:
-        prediction = random.randint(0,1)
-        if prediction == 1:
-            positive += 1
-        else:
-            negative += 1
-    return (positive,negative)
-
-def predict_positive(file_dir):
-    files = os.listdir(file_dir)
-    positive = len(files)
-    negative = 0
-    return (positive,negative)
-
-answer = predict_random("../part1_data/train/neg")
-print(answer)
-answer = predict_random("../part1_data/train/pos")
-print(answer)
-answer = predict_random("../part1_data/test/pos")
-print(answer)
-answer = predict_random("../part1_data/test/neg")
-print(answer)
-print("-------------------------------------")
-
-answer = predict_positive("../part1_data/train/neg")
-print(answer)
-answer = predict_positive("../part1_data/train/pos")
-print(answer)
-answer = predict_positive("../part1_data/test/pos")
-print(answer)
-answer = predict_positive("../part1_data/test/neg")
-print(answer)
-print("-------------------------------------")

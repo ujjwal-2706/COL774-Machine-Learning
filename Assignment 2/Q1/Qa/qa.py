@@ -125,7 +125,6 @@ for word in negative_map:
         negative_string.append(" ")
 positive_words = "".join(positive_string)
 negative_words = "".join(negative_string)
-# stopword = set(STOPWORDS)
 positive_cloud = WordCloud(width = 800, height = 800,background_color ='white',stopwords = [],collocations=False,min_font_size = 10).generate(positive_words)
 negative_cloud = WordCloud(width = 800, height = 800,background_color ='white',stopwords = [],collocations = False,min_font_size = 10).generate(negative_words)                     
 plt.figure(figsize = (8, 8), facecolor = None)
@@ -137,42 +136,3 @@ plt.imshow(negative_cloud)
 plt.axis("off")
 plt.savefig("neg_word_cloud.png",dpi = 1000)
 #------------------------------------
-
-
-def predict_random(file_dir):
-    files = os.listdir(file_dir)
-    positive = 0
-    negative = 0
-    for file in files:
-        prediction = random.randint(0,1)
-        if prediction == 1:
-            positive += 1
-        else:
-            negative += 1
-    return (positive,negative)
-
-def predict_positive(file_dir):
-    files = os.listdir(file_dir)
-    positive = len(files)
-    negative = 0
-    return (positive,negative)
-
-# answer = predict_random("../part1_data/train/neg")
-# print(answer)
-# answer = predict_random("../part1_data/train/pos")
-# print(answer)
-# answer = predict_random("../part1_data/test/pos")
-# print(answer)
-# answer = predict_random("../part1_data/test/neg")
-# print(answer)
-# print("-------------------------------------")
-
-# answer = predict_positive("../part1_data/train/neg")
-# print(answer)
-# answer = predict_positive("../part1_data/train/pos")
-# print(answer)
-# answer = predict_positive("../part1_data/test/pos")
-# print(answer)
-# answer = predict_positive("../part1_data/test/neg")
-# print(answer)
-# print("-------------------------------------")
