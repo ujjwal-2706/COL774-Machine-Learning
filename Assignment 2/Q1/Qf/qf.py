@@ -231,6 +231,12 @@ def predict_directory(file_dir):
 (test_neg_positive,test_neg_negative) = predict_directory(test_path_neg)
 (test_pos_positive,test_pos_negative) = predict_directory(test_path_pos)
 print(f"Test accuracy : {(test_neg_negative + test_pos_positive)/(test_neg_negative + test_pos_positive + test_neg_positive + test_pos_negative)}")
+precision = (test_pos_positive) / (test_pos_positive + test_neg_positive)
+recall = (test_pos_positive) / (test_pos_positive + test_pos_negative)
+f1_score = (2*precision*recall)/(precision + recall)
+print("precision: ",precision)
+print("recall: ",recall)
+print("F1 Score: ",f1_score)
 end = time.time()
 print(end - start)
 

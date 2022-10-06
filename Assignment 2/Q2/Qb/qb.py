@@ -2,10 +2,14 @@ import pandas as pd
 import numpy as np
 import cvxopt
 import time
+import matplotlib.pyplot as plt
 from sklearn import metrics
+import sys
+train_path = sys.argv[1] + "/train_data.pickle"
+test_path = sys.argv[2] + "/test_data.pickle"
 start_time = time.time()
-obj = pd.read_pickle(r'../part2_data/train_data.pickle')
-obj_test = pd.read_pickle(r'../part2_data/test_data.pickle')
+obj = pd.read_pickle(train_path)
+obj_test = pd.read_pickle(test_path)
 (data_points_test,dim1_test,dim2_test,dim3_test) = np.shape(obj_test['data'])
 (data_points,dim1,dim2,dim3) = np.shape(obj['data'])
 index_1 = []
@@ -99,11 +103,15 @@ support_vector_indices = []
 for i in range(len(alpha)):
     if alpha[i,0] > 0.00001:
         support_vector_indices.append(i)
-
+support_file = open('support.txt','w')
+for i in support_vector_indices:
+    support_file.write(str(i))
+    support_file.write('\n')
+support_file.close()
+print("support vectors : ",len(support_vector_indices))
 #2915 support vectors coming
 support_vectors = train_data_norm[support_vector_indices]
 y_val_support_vectors = y[support_vector_indices]
-print(len(support_vectors))
 #now we will find wTx values and b values of svm
 def normal_product(m,x_data,train_truth,train_index):
     if train_truth :
@@ -122,6 +130,7 @@ def constant_line(m):
         answer = (y[i] - normal_product(m,support_vectors[i,:],True,support_vector_indices[i]))
     return answer / len(support_vectors)
 b = constant_line(4000)
+print(b)
 def predict(m,x_value):
     value = normal_product(m,x_value,False,-1) + b
     if value >= 0 :
@@ -140,5 +149,18 @@ def final_train_prediction(m,test):
 #on test data 1639 correct out of 2000
 print(final_train_prediction(4000,2000))
 
+#now we plot the top 5 support vectors and w vectors
+index_top = []
+for i in range(5):
+    max_val = i
+    for j in range(i,len(support_vector_indices)):
+        if alpha[support_vector_indices[j],0] > alpha[support_vector_indices[max_val],0]:
+            max_val = j
+    index_top.append(support_vector_indices[max_val])
+    support_vector_indices[i],support_vector_indices[max_val] = support_vector_indices[max_val],support_vector_indices[i]
+for i in range(5):
+    data = np.reshape(obj['data'][2000 + index_top[i]],(32,32,3))
+    plt.imshow(data,interpolation='nearest')
+    plt.savefig(f"image{i+1}.png",dpi = 1000)
 end_time = time.time()
 print(end_time-start_time)

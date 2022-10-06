@@ -1,10 +1,14 @@
+import matplotlib.pyplot as plt
 import pandas as pd
 import numpy as np
 import cvxopt
 import time
+import sys
+train_path = sys.argv[1] + "/train_data.pickle"
+test_path = sys.argv[2] + "/test_data.pickle"
 start_time = time.time()
-obj = pd.read_pickle(r'../part2_data/train_data.pickle')
-obj_test = pd.read_pickle(r'../part2_data/test_data.pickle')
+obj = pd.read_pickle(train_path)
+obj_test = pd.read_pickle(test_path)
 (data_points_test,dim1_test,dim2_test,dim3_test) = np.shape(obj_test['data'])
 (data_points,dim1,dim2,dim3) = np.shape(obj['data'])
 index_1 = []
@@ -87,8 +91,13 @@ support_vector_indices = []
 for i in range(len(alpha)):
     if alpha[i,0] > 0.000001:
         support_vector_indices.append(i)
-
-#1398 support vectors coming
+support_file = open('support.txt','w')
+for i in support_vector_indices:
+    support_file.write(str(i))
+    support_file.write('\n')
+support_file.close()
+#1387 support vectors coming
+print("support vectors : ",len(support_vector_indices))
 support_vectors = train_data_norm[support_vector_indices]
 y_val_support_vectors = y[support_vector_indices]
 #now we will find w and b values of svm
@@ -97,12 +106,18 @@ def normal_line(m):
     new_data[0:m//2] = -1.0 * train_data_norm[0:m//2]
     return (alpha.T @ new_data)
 w_transpose = normal_line(4000)
+w_file = open("w_value.txt",'w')
+for i in range(3072):
+    w_file.write(str(w_transpose[0,i]))
+    w_file.write("\n")
+w_file.close()
 def constant_line():
     all_val = y_val_support_vectors - (support_vectors @ w_transpose.T)
     num_support_vectors = len(all_val)
     row_vector = np.ones((1,num_support_vectors))
     return (row_vector @ all_val) / num_support_vectors
 b = constant_line()
+print(b)
 def predict(x_value):
     value = (w_transpose @ x_value.T) + b
     if value >= 0 :
@@ -121,5 +136,22 @@ def final_train_prediction(m):
 #on test data 1495 correct out of 2000
 print(final_train_prediction(2000))
 
+#now we plot the top 5 support vectors and w vectors
+index_top = []
+for i in range(5):
+    max_val = i
+    for j in range(i,len(support_vector_indices)):
+        if alpha[support_vector_indices[j],0] > alpha[support_vector_indices[max_val],0]:
+            max_val = j
+    index_top.append(support_vector_indices[max_val])
+    support_vector_indices[i],support_vector_indices[max_val] = support_vector_indices[max_val],support_vector_indices[i]
+for i in range(5):
+    data = np.reshape(obj['data'][2000 + index_top[i]],(32,32,3))
+    plt.imshow(data,interpolation='nearest')
+    plt.savefig(f"image{i+1}.png",dpi = 1000)
+
+data_w = np.reshape(w_transpose,(32,32,3))
+plt.imshow(data_w,interpolation='nearest')
+plt.savefig("w.png",dpi = 1000)
 end_time = time.time()
 print(end_time-start_time)
