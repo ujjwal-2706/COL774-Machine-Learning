@@ -2,9 +2,12 @@ from sklearn import svm
 import pandas as pd
 import numpy as np
 import time
+import sys
 start_time = time.time()
-obj = pd.read_pickle(r'../part2_data/train_data.pickle')
-obj_test = pd.read_pickle(r'../part2_data/test_data.pickle')
+train_path = sys.argv[1] + "/train_data.pickle"
+test_path = sys.argv[2] + "/test_data.pickle"
+obj = pd.read_pickle(train_path)
+obj_test = pd.read_pickle(test_path)
 (data_points_test,dim1_test,dim2_test,dim3_test) = np.shape(obj_test['data'])
 (data_points,dim1,dim2,dim3) = np.shape(obj['data'])
 index_1 = []
@@ -67,11 +70,33 @@ y = np.array(y_data)
 linear_svm = svm.SVC(kernel='linear') # Linear Kernel
 gaussian_svm = svm.SVC(kernel='rbf',C = 1.0,gamma=0.001) # gaussian kernel
 
+time_linear_start = time.time()
 #Train the model using the training sets
 linear_svm.fit(train_data_norm, y)
+time_linear_end = time.time()
+print("time linear: ",time_linear_end - time_linear_start)
 gaussian_svm.fit(train_data_norm,y)
+time_gauss_end = time.time()
+print("time gaussian: ",time_gauss_end - time_linear_end)
+file_svm_linear = open("support_linear.txt",'w')
+for i in linear_svm.support_ :
+    file_svm_linear.write(str(i))
+    file_svm_linear.write('\n')
+file_svm_linear.close()
+file_svm_gauss = open("support_gauss.txt",'w')
+for i in gaussian_svm.support_ :
+    file_svm_gauss.write(str(i))
+    file_svm_gauss.write('\n')
+file_svm_gauss.close()
 print(len(linear_svm.support_))
 print(len(gaussian_svm.support_))
+w_val_linear = linear_svm.coef_
+file_w_val = open("w_val.txt",'w')
+for i in range(3072):
+    file_w_val.write(str(w_val_linear[0,i]))
+    file_w_val.write('\n')
+file_w_val.close()
+print("b value: ", linear_svm.intercept_)
 #Predict the response for test dataset
 y_pred_linear = linear_svm.predict(test_data_norm)
 y_pred_gaussian = gaussian_svm.predict(test_data_norm)
@@ -85,7 +110,8 @@ def accuracy(m,y_pred):
             if y_pred[i] == 1:
                 correct += 1
     return (100*correct) / m
-print(accuracy(2000,y_pred_linear))
-print(accuracy(2000,y_pred_gaussian))
+test_cases = len(y_test_val)
+print(accuracy(test_cases,y_pred_linear))
+print(accuracy(test_cases,y_pred_gaussian))
 end_time = time.time()
 print(end_time - start_time)

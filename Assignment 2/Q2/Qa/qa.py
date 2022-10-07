@@ -86,7 +86,7 @@ def optimize_linear(m):
     sol = cvxopt.solvers.qp(P,q,G,h,A,b)
     return sol['x']
 #alpha obtained here is of shape (4000,1)
-alpha = np.array(optimize_linear(4000))
+alpha = np.array(optimize_linear(len(y_data)))
 support_vector_indices = []
 for i in range(len(alpha)):
     if alpha[i,0] > 0.000001:
@@ -105,7 +105,7 @@ def normal_line(m):
     new_data = np.array(train_data_norm)
     new_data[0:m//2] = -1.0 * train_data_norm[0:m//2]
     return (alpha.T @ new_data)
-w_transpose = normal_line(4000)
+w_transpose = normal_line(len(y_data))
 w_file = open("w_value.txt",'w')
 for i in range(3072):
     w_file.write(str(w_transpose[0,i]))
@@ -134,7 +134,7 @@ def final_train_prediction(m):
 
 #on train data 3995 correct out of 4000
 #on test data 1495 correct out of 2000
-print(final_train_prediction(2000))
+print(final_train_prediction(len(y_test_val)))
 
 #now we plot the top 5 support vectors and w vectors
 index_top = []

@@ -2,9 +2,12 @@ from sklearn import svm
 import pandas as pd
 import numpy as np
 import time
+import sys
 start_time = time.time()
-obj = pd.read_pickle(r'../part3_data/train_data.pickle')
-obj_test = pd.read_pickle(r'../part3_data/test_data.pickle')
+train_path = sys.argv[1] + '/train_data.pickle'
+test_path = sys.argv[2] + '/test_data.pickle'
+obj = pd.read_pickle(train_path)
+obj_test = pd.read_pickle(test_path)
 (data_points_test,dim1_test,dim2_test,dim3_test) = np.shape(obj_test['data'])
 (data_points,dim1,dim2,dim3) = np.shape(obj['data'])
 train_data = (obj['data']).reshape(data_points,-1)

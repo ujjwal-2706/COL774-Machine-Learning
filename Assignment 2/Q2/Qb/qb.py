@@ -98,7 +98,7 @@ def optimize_gaussian(m):
     return sol['x']
 
 #alpha obtained here is of shape (4000,1)
-alpha = np.array(optimize_gaussian(4000))
+alpha = np.array(optimize_gaussian(len(y_data)))
 support_vector_indices = []
 for i in range(len(alpha)):
     if alpha[i,0] > 0.00001:
@@ -129,7 +129,7 @@ def constant_line(m):
     for i in range(len(support_vectors)):
         answer = (y[i] - normal_product(m,support_vectors[i,:],True,support_vector_indices[i]))
     return answer / len(support_vectors)
-b = constant_line(4000)
+b = constant_line(len(y_data))
 print(b)
 def predict(m,x_value):
     value = normal_product(m,x_value,False,-1) + b
@@ -147,7 +147,7 @@ def final_train_prediction(m,test):
 
 #on train data 3995 correct out of 4000
 #on test data 1639 correct out of 2000
-print(final_train_prediction(4000,2000))
+print(final_train_prediction(len(y_data),len(y_test_val)))
 
 #now we plot the top 5 support vectors and w vectors
 index_top = []

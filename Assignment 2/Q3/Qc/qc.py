@@ -4,6 +4,10 @@ import cvxopt
 import time
 from sklearn import metrics
 import sys
+from sklearn import svm
+from sklearn.metrics import confusion_matrix,ConfusionMatrixDisplay 
+import matplotlib.pyplot as plt
+
 start_time = time.time()
 train_path = sys.argv[1] + '/train_data.pickle'
 test_path = sys.argv[2] + '/test_data.pickle'
@@ -130,11 +134,55 @@ test_data = (obj_test['data']).reshape(data_points_test,-1)
 test_data.astype(np.double)
 def accuracy():
     correct = 0
+    result_prediction = []
+    orignal_prediction = []
+    misclassified = []
     for i in range(data_points_test):
-        if predict_one(test_data[i,:]) == obj_test['labels'][i]:
+        val = predict_one(test_data[i,:])
+        result_prediction.append(val)
+        orignal_prediction.append(obj_test['labels'][i])
+        if val == obj_test['labels'][i]:
             correct += 1
-    return ((100*correct)/(data_points_test))
-percent_correct = accuracy()
-print(percent_correct)
+        else:
+            if len(misclassified) < 10:
+                misclassified.append(i)
+    return (((100*correct)/(data_points_test)),result_prediction,orignal_prediction,misclassified)
+(percent_correct,result_prediction_cvx,orignal_prediction,misclassified) = accuracy()
+
+
+#sklearn predictor
+train_data = (obj['data']).reshape(data_points,-1)
+y_val = np.ravel(obj['labels'])
+mean_train = np.mean(train_data,axis=0)
+std_train = np.std(train_data,axis=0)
+train_data_norm = np.zeros((data_points,3072),dtype=np.double)
+for i in range(data_points):
+    train_data_norm[i,:] = (train_data[i,:] - mean_train)/(std_train)
+test_data = (obj_test['data']).reshape(data_points_test,-1)
+y_val_test = np.ravel(obj_test['labels'])
+test_data_norm = np.zeros((data_points_test,3072),dtype=np.double)
+for i in range(data_points_test):
+    test_data_norm[i,:] = (test_data[i,:] - mean_train)/(std_train)
+gaussian_svm = svm.SVC(kernel='rbf',C = 1.0,gamma=0.001) # gaussian kernel
+gaussian_svm.fit(train_data_norm,y_val)
+y_prediction = gaussian_svm.predict(test_data_norm)
+
+
+#now comes the figure plotting part
+cm_cvx = confusion_matrix(orignal_prediction,result_prediction_cvx)
+disp_cvx = ConfusionMatrixDisplay(confusion_matrix = cm_cvx)
+disp_cvx.plot()
+plt.savefig("confusion_cvx.png",dpi=1000)
+
+cm_sklearn = confusion_matrix(y_val_test,y_prediction)
+disp_sklearn = ConfusionMatrixDisplay(confusion_matrix = cm_sklearn)
+disp_sklearn.plot()
+plt.savefig("confusion_sklearn.png",dpi=1000)
+
+for i in range(len(misclassified)):
+    data = np.reshape(obj['data'][misclassified[i]],(32,32,3))
+    plt.imshow(data,interpolation='nearest')
+    plt.savefig(f"image{i+1}.png",dpi = 1000)
+
 end_time = time.time()
 print(end_time - start_time)
