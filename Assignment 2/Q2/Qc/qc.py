@@ -88,15 +88,15 @@ for i in gaussian_svm.support_ :
     file_svm_gauss.write(str(i))
     file_svm_gauss.write('\n')
 file_svm_gauss.close()
-print(len(linear_svm.support_))
-print(len(gaussian_svm.support_))
+print(f"Linear Support Vectors :  {len(linear_svm.support_)}")
+print(f"Gaussian Support Vectors : {len(gaussian_svm.support_)}")
 w_val_linear = linear_svm.coef_
 file_w_val = open("w_val.txt",'w')
 for i in range(3072):
     file_w_val.write(str(w_val_linear[0,i]))
     file_w_val.write('\n')
 file_w_val.close()
-print("b value: ", linear_svm.intercept_)
+print("b value Linear: ", linear_svm.intercept_)
 #Predict the response for test dataset
 y_pred_linear = linear_svm.predict(test_data_norm)
 y_pred_gaussian = gaussian_svm.predict(test_data_norm)
@@ -111,7 +111,7 @@ def accuracy(m,y_pred):
                 correct += 1
     return (100*correct) / m
 test_cases = len(y_test_val)
-print(accuracy(test_cases,y_pred_linear))
-print(accuracy(test_cases,y_pred_gaussian))
+print(f"Test accuracy Linear : {accuracy(test_cases,y_pred_linear)}")
+print(f"Test accuracy Gaussian : {accuracy(test_cases,y_pred_gaussian)}")
 end_time = time.time()
-print(end_time - start_time)
+print(f"Time Taken : {end_time - start_time}")

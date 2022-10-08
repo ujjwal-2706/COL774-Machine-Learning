@@ -232,5 +232,5 @@ def predict_directory(file_dir):
 (test_pos_positive,test_pos_negative) = predict_directory(test_path_pos)
 print(f"Test accuracy : {(test_neg_negative + test_pos_positive)/(test_neg_negative + test_pos_positive + test_neg_positive + test_pos_negative)}")
 end = time.time()
-print(end - start)
+print(f"Time Taken : {end - start}")
 

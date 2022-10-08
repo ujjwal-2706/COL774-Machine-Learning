@@ -130,7 +130,7 @@ def constant_line(m):
         answer = (y[i] - normal_product(m,support_vectors[i,:],True,support_vector_indices[i]))
     return answer / len(support_vectors)
 b = constant_line(len(y_data))
-print(b)
+print(f"b is : {b}")
 def predict(m,x_value):
     value = normal_product(m,x_value,False,-1) + b
     if value >= 0 :
@@ -147,7 +147,7 @@ def final_train_prediction(m,test):
 
 #on train data 3995 correct out of 4000
 #on test data 1639 correct out of 2000
-print(final_train_prediction(len(y_data),len(y_test_val)))
+print(f"Test Accuracy : {final_train_prediction(len(y_data),len(y_test_val))}")
 
 #now we plot the top 5 support vectors and w vectors
 index_top = []
@@ -163,4 +163,4 @@ for i in range(5):
     plt.imshow(data,interpolation='nearest')
     plt.savefig(f"image{i+1}.png",dpi = 1000)
 end_time = time.time()
-print(end_time-start_time)
+print(f"Time Taken : {end_time-start_time}")

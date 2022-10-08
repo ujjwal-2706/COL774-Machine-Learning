@@ -4,7 +4,6 @@ import time
 import numpy as np
 from wordcloud import WordCloud, STOPWORDS
 import matplotlib.pyplot as plt
-import random
 start = time.time()
 train_path = sys.argv[1]
 test_path = sys.argv[2]
@@ -108,7 +107,7 @@ print(f"Train accuracy : {(train_neg_negative + train_pos_positive)/(train_neg_n
 print(f"Test accuracy : {(test_neg_negative + test_pos_positive)/(test_neg_negative + test_pos_positive + test_neg_positive + test_pos_negative)}")
 
 end = time.time()
-print(end - start)
+print(f"Time taken : {end - start}")
 
 
 #--------------------------------------

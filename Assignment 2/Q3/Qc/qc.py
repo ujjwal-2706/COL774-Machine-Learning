@@ -182,7 +182,6 @@ plt.savefig("confusion_sklearn.png",dpi=1000)
 for i in range(len(misclassified)):
     data = np.reshape(obj['data'][misclassified[i]],(32,32,3))
     plt.imshow(data,interpolation='nearest')
-    plt.savefig(f"image{i+1}.png",dpi = 1000)
-
+    plt.savefig(f"image{i+1}.png", bbox_inches='tight', pad_inches=0,dpi = 1000)
 end_time = time.time()
-print(end_time - start_time)
+print(f"Time Taken : {end_time - start_time}")

@@ -1,5 +1,19 @@
 import numpy as np
-vector1 = np.array([2.0,3.0,4.0,5.0],dtype=np.double)
-vector2 = np.array([1.0,2.0,8.0,7.0],dtype=np.double)
-vector3 = np.array([1.5,2.5,3.5,4.5],dtype=np.double)
-print((vector1-vector2)/vector3)
+import sys
+file_1 = np.loadtxt(sys.argv[1],dtype=int)
+file_2 = np.loadtxt(sys.argv[2],dtype= int)
+index1 = 0
+index2 = 0
+vec1 = np.shape(file_1)[0]
+vec2 = np.shape(file_2)[0]
+count_match = 0
+while index1 < vec1 and index2 < vec2:
+    if file_1[index1] == file_2[index2]:
+        index1+=1
+        index2+=1
+        count_match+=1
+    elif file_1[index1] < file_2[index2]:
+        index1 += 1
+    else:
+        index2 += 1
+print(count_match)

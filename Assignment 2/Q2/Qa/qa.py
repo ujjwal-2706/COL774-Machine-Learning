@@ -117,7 +117,7 @@ def constant_line():
     row_vector = np.ones((1,num_support_vectors))
     return (row_vector @ all_val) / num_support_vectors
 b = constant_line()
-print(b)
+print(f"b is : {b}")
 def predict(x_value):
     value = (w_transpose @ x_value.T) + b
     if value >= 0 :
@@ -134,7 +134,7 @@ def final_train_prediction(m):
 
 #on train data 3995 correct out of 4000
 #on test data 1495 correct out of 2000
-print(final_train_prediction(len(y_test_val)))
+print(f"Test accuracy : {final_train_prediction(len(y_test_val))}")
 
 #now we plot the top 5 support vectors and w vectors
 index_top = []
@@ -154,4 +154,4 @@ data_w = np.reshape(w_transpose,(32,32,3))
 plt.imshow(data_w,interpolation='nearest')
 plt.savefig("w.png",dpi = 1000)
 end_time = time.time()
-print(end_time-start_time)
+print(f"Time Taken : {end_time-start_time}")

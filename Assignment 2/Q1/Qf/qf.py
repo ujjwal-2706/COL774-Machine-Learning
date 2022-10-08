@@ -238,5 +238,5 @@ print("precision: ",precision)
 print("recall: ",recall)
 print("F1 Score: ",f1_score)
 end = time.time()
-print(end - start)
+print(f"Time Taken : {end - start}")
 

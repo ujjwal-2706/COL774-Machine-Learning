@@ -33,6 +33,6 @@ def accuracy():
     return ((100* correct)/(len(y_prediction)))
 
 percent_correct = accuracy()
-print(percent_correct)
+print(f"Test accuracy : {percent_correct}")
 end_time = time.time()
-print(end_time - start_time)
+print(f"Time Taken : {end_time - start_time}")

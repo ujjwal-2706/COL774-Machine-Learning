@@ -44,4 +44,4 @@ print(f"Positive train accuracy : {(train_neg_negative + train_pos_positive)/(tr
 print(f"Positive test accuracy : {(test_neg_negative + test_pos_positive)/(test_neg_negative + test_pos_positive + test_neg_positive + test_pos_negative)}")
 
 end = time.time()
-print(end - start)
+print(f"Time Taken : {end - start}")

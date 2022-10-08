@@ -4,7 +4,6 @@ import time
 import numpy as np
 from wordcloud import WordCloud, STOPWORDS
 import matplotlib.pyplot as plt
-import random
 from nltk.stem import PorterStemmer
 from nltk.corpus import stopwords
 stemmer = PorterStemmer()
@@ -114,7 +113,7 @@ print(f"Train accuracy : {(train_neg_negative + train_pos_positive)/(train_neg_n
 (test_pos_positive,test_pos_negative) = predict_directory(test_path_pos)
 print(f"Test accuracy : {(test_neg_negative + test_pos_positive)/(test_neg_negative + test_pos_positive + test_neg_positive + test_pos_negative)}")
 end = time.time()
-print(end - start)
+print(f"Time Taken : {end - start}")
 
 #--------------------------------------
 #now we will do the word cloud plotting
