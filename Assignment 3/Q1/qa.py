@@ -59,5 +59,5 @@ print(f"Train accuracy is : {accuracy(y_train,y_train_prediction)}")
 print(f"Test accuracy is : {accuracy(y_test,y_test_prediction)}")
 print(f"Validation accuracy is : {accuracy(y_validation,y_validation_prediction)}")
 
-tree.plot_tree(classifier,filled=True,max_depth=2,label='all')
+tree.plot_tree(classifier,filled=True,label='all')
 plt.show()
