@@ -3,25 +3,40 @@ import sys
 import time
 start_time = time.time()
 train_data = np.loadtxt("../../../part2/fmnist_train.csv",dtype=int,delimiter=',')
+test_data = np.loadtxt("../../../part2/fmnist_test.csv",dtype=int,delimiter=',')
 (m,features) = np.shape(train_data)
+(test_case,total_features) = np.shape(test_data)
 features = features-1
 x_train = np.zeros((m,features))
 y_train = np.zeros((m,1))
 x_train = train_data[:,:features]
 y_train = train_data[:,features]
+x_test = test_data[:,:features]
+y_test = test_data[:,features]
 
+x_test_normalize = x_test/(255.0)
 #data normalized by dividing by highest pixel unit
 x_train_normalize = x_train/(255.0)
+
 CLASSES= 10
 y_train_encoding = np.zeros((m,CLASSES),dtype=np.double)
+
 def encode(y_val):
     answer = np.zeros((1,CLASSES),dtype=np.double)
     answer[0,y_val-1] = 1.0
     return answer
 for i in range(m):
     y_train_encoding[i,:] = encode(y_train[i])
+
 def sigmoid(x):
     return 1.0/(1.0 + np.exp(-x))
+
+def print_array(numpy_array):
+    row,col = np.shape(numpy_array)
+    for i in range(row):
+        for j in range(col):
+            if numpy_array[i,j] != 0:
+                print(numpy_array[i,j])
 #function to find o(l) and net(l) given a theta dictionary and x_data
 #we will always have to add a neuron that outputs 1
 #assume theta for each neuron arranged in every row
@@ -33,11 +48,13 @@ def output(x_data,theta,layers):
     for l in range(1,layers+1):
         input = theta[l] @ input
         input = sigmoid(input)
+        # print_array(input)
         layer_output[l] = input
         feat,points = np.shape(input)
         input = np.vstack((np.ones((1,points),dtype=np.double),input))
+    # print("-------------------------------------------------------------------")
     return layer_output #this dictoinary of matrix o(l) in each column for m points
-    
+
 #y_data is matrix of one-hot encoding each row represents a output
 #x_data arranged in column form
 def gradients(x_data,theta,layers,y_data):
@@ -48,6 +65,7 @@ def gradients(x_data,theta,layers,y_data):
     net_gradients[layers] =(y_data.T - layer_output[layers]) * (layer_output[layers] * (layer_output[layers]-1))
     row,col = np.shape(layer_output[layers-1])
     theta_gradients[layers] = net_gradients[layers] @ (np.vstack(((np.ones((1,col),dtype=np.double)),layer_output[layers-1])).T)
+    # print_array(theta_gradients[layers])
     for l in range(layers-1,0,-1):
         J_l = net_gradients[l+1]
         theta_temp = theta[l+1][:,1:] #remove the constants
@@ -73,7 +91,9 @@ def batch_slice(train_whole,batch_size,r,k):
         x_value = output[:,:values-r]
         y_value = output[:,values-r:]
         return (x_value,y_value)
+
 def gradient_descent(x_train_norm,y_train_bit,eta,layer_list,batch_size):
+    row,col = np.shape(y_train_bit)
     train_whole = np.hstack((x_train_norm,y_train_bit))
     np.random.shuffle(train_whole)
     theta = {}
@@ -81,14 +101,63 @@ def gradient_descent(x_train_norm,y_train_bit,eta,layer_list,batch_size):
     previous_input = features
     for layer in range(1,layers+1):
         neurons = layer_list[layer-1]
-        theta_val = np.zeros((neurons,1+previous_input),dtype=np.double)
+        theta_val = 0.0 * np.ones((neurons,1+previous_input),dtype=np.double)
+        # theta_val = 0.01 * np.random.rand(neurons,1+previous_input) -  0.005 * np.ones((neurons,1+previous_input)) 
         previous_input = neurons
         theta[layer] = theta_val
     #theta constructed now only batch taking and gradient change left
     start_val = time.time()
-    gradients(x_train.T,theta,layers,y_train_bit)
+    batch_num = 0
+    total_iter = 0
+    x_val,y_val = batch_slice(train_whole,batch_size,col,batch_num)
+    theta_gradients = gradients(x_val.T,theta,layers,y_val)
+    # print_array(theta_gradients[1])
+    # print(x_val[1,10])
+    while True:
+        iteration = 0
+        diff_val = 0
+        while iteration < 100:
+            x_val,y_val = batch_slice(train_whole,batch_size,col,batch_num)
+            theta_gradients = gradients(x_val.T,theta,layers,y_val)
+            for i in range(1,layers+1):
+                theta[i] = theta[i] - (eta/batch_size)*(theta_gradients[i])
+                # print_array(theta_gradients[i])
+                val = (eta/batch_size)*(theta_gradients[i])
+                num_row,num_col = np.shape(val)
+                diff_val += np.ones((1,num_row)) @ (val*val) @ np.ones((num_col,1))
+            batch_num += 1
+            # batch_num %= row
+            iteration += 1
+        total_iter += 1
+        print(total_iter)
+        diff_val /= iteration
+        # print(diff_val)
+        if  total_iter == 1000 :
+            # print(theta_gradients[1])
+            break
     end_val = time.time()
     print(f"gradient time is : {end_val-start_val}")
-gradient_descent(x_train_normalize,y_train_encoding,0.1,[100,50,10])
+    return theta
+theta = gradient_descent(x_train_normalize,y_train_encoding,0.1,[25,10],100)
+def accuracy(theta,x_test,y_test,layers):
+    outputs = output(x_test.T,theta,layers)
+    final_answer = outputs[layers]
+    row,col = np.shape(final_answer)
+    correct = 0
+    for test in range(col):
+        max_index = 0
+        for j in range(row):
+            if final_answer[j,test] > final_answer[max_index,test]:
+                max_index = j
+        # print(y_test[0,test])
+        if max_index + 1 == y_test[test]:
+            correct += 1
+    return (100*correct/col)
+# print(theta[1])
+# theta_new = 0.001* np.ones((100,784))
+# val_new = sigmoid(theta_new @ x_train_normalize.T)
+# print_array(val_new)
+print(accuracy(theta,x_test_normalize,y_test,2))
 end_time = time.time()
 print(f"Time Taken is : {end_time - start_time}")
+#accuracy on 25 coming 60.57% and on 5 coming 50.16%
