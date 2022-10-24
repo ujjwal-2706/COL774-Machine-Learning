@@ -52,7 +52,6 @@ def output(x_data,theta,layers):
         layer_output[l] = input
         feat,points = np.shape(input)
         input = np.vstack((np.ones((1,points),dtype=np.double),input))
-    # print("-------------------------------------------------------------------")
     return layer_output #this dictoinary of matrix o(l) in each column for m points
 
 #y_data is matrix of one-hot encoding each row represents a output
@@ -101,8 +100,8 @@ def gradient_descent(x_train_norm,y_train_bit,eta,layer_list,batch_size):
     previous_input = features
     for layer in range(1,layers+1):
         neurons = layer_list[layer-1]
-        theta_val = 0.0 * np.ones((neurons,1+previous_input),dtype=np.double)
-        # theta_val = 0.01 * np.random.rand(neurons,1+previous_input) -  0.005 * np.ones((neurons,1+previous_input)) 
+        # theta_val = 0.0 * np.ones((neurons,1+previous_input),dtype=np.double)
+        theta_val = np.random.normal(0,0.1,size=(neurons,1+previous_input)) 
         previous_input = neurons
         theta[layer] = theta_val
     #theta constructed now only batch taking and gradient change left
@@ -132,13 +131,13 @@ def gradient_descent(x_train_norm,y_train_bit,eta,layer_list,batch_size):
         print(total_iter)
         diff_val /= iteration
         # print(diff_val)
-        if  total_iter == 1000 :
+        if  total_iter == 6000 :
             # print(theta_gradients[1])
             break
     end_val = time.time()
     print(f"gradient time is : {end_val-start_val}")
     return theta
-theta = gradient_descent(x_train_normalize,y_train_encoding,0.1,[25,10],100)
+theta = gradient_descent(x_train_normalize,y_train_encoding,0.1,[10,10],100)
 def accuracy(theta,x_test,y_test,layers):
     outputs = output(x_test.T,theta,layers)
     final_answer = outputs[layers]
@@ -158,6 +157,7 @@ def accuracy(theta,x_test,y_test,layers):
 # val_new = sigmoid(theta_new @ x_train_normalize.T)
 # print_array(val_new)
 print(accuracy(theta,x_test_normalize,y_test,2))
+print(accuracy(theta,x_train_normalize,y_train,2))
 end_time = time.time()
 print(f"Time Taken is : {end_time - start_time}")
-#accuracy on 25 coming 60.57% and on 5 coming 50.16%
+#accuracy on 10 coming with 6000 iterations 77.34% on test data and 81.07% on training data in 270 seconds
