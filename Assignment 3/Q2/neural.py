@@ -64,7 +64,6 @@ def gradients(x_data,theta,layers,y_data):
     net_gradients[layers] =(y_data.T - layer_output[layers]) * (layer_output[layers] * (layer_output[layers]-1))
     row,col = np.shape(layer_output[layers-1])
     theta_gradients[layers] = net_gradients[layers] @ (np.vstack(((np.ones((1,col),dtype=np.double)),layer_output[layers-1])).T)
-    # print_array(theta_gradients[layers])
     for l in range(layers-1,0,-1):
         J_l = net_gradients[l+1]
         theta_temp = theta[l+1][:,1:] #remove the constants
@@ -100,7 +99,6 @@ def gradient_descent(x_train_norm,y_train_bit,eta,layer_list,batch_size):
     previous_input = features
     for layer in range(1,layers+1):
         neurons = layer_list[layer-1]
-        # theta_val = 0.0 * np.ones((neurons,1+previous_input),dtype=np.double)
         theta_val = np.random.normal(0,0.1,size=(neurons,1+previous_input)) 
         previous_input = neurons
         theta[layer] = theta_val
@@ -110,8 +108,6 @@ def gradient_descent(x_train_norm,y_train_bit,eta,layer_list,batch_size):
     total_iter = 0
     x_val,y_val = batch_slice(train_whole,batch_size,col,batch_num)
     theta_gradients = gradients(x_val.T,theta,layers,y_val)
-    # print_array(theta_gradients[1])
-    # print(x_val[1,10])
     while True:
         iteration = 0
         diff_val = 0
@@ -120,24 +116,20 @@ def gradient_descent(x_train_norm,y_train_bit,eta,layer_list,batch_size):
             theta_gradients = gradients(x_val.T,theta,layers,y_val)
             for i in range(1,layers+1):
                 theta[i] = theta[i] - (eta/batch_size)*(theta_gradients[i])
-                # print_array(theta_gradients[i])
                 val = (eta/batch_size)*(theta_gradients[i])
                 num_row,num_col = np.shape(val)
                 diff_val += np.ones((1,num_row)) @ (val*val) @ np.ones((num_col,1))
             batch_num += 1
-            # batch_num %= row
             iteration += 1
         total_iter += 1
         print(total_iter)
         diff_val /= iteration
-        # print(diff_val)
         if  total_iter == 6000 :
-            # print(theta_gradients[1])
             break
     end_val = time.time()
     print(f"gradient time is : {end_val-start_val}")
     return theta
-theta = gradient_descent(x_train_normalize,y_train_encoding,0.1,[10,10],100)
+theta = gradient_descent(x_train_normalize,y_train_encoding,0.1,[25,10],100)
 def accuracy(theta,x_test,y_test,layers):
     outputs = output(x_test.T,theta,layers)
     final_answer = outputs[layers]
@@ -148,16 +140,13 @@ def accuracy(theta,x_test,y_test,layers):
         for j in range(row):
             if final_answer[j,test] > final_answer[max_index,test]:
                 max_index = j
-        # print(y_test[0,test])
         if max_index + 1 == y_test[test]:
             correct += 1
     return (100*correct/col)
-# print(theta[1])
-# theta_new = 0.001* np.ones((100,784))
-# val_new = sigmoid(theta_new @ x_train_normalize.T)
-# print_array(val_new)
+
 print(accuracy(theta,x_test_normalize,y_test,2))
 print(accuracy(theta,x_train_normalize,y_train,2))
 end_time = time.time()
 print(f"Time Taken is : {end_time - start_time}")
 #accuracy on 10 coming with 6000 iterations 77.34% on test data and 81.07% on training data in 270 seconds
+#accuracy on 25 coming with 6000 iterations 79.2% on test data and 83.27% on training data in 1000 seconds
