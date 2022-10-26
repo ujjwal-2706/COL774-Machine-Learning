@@ -26,7 +26,7 @@ y_train_encoding = np.zeros((m,CLASSES),dtype=np.double)
 
 def encode(y_val):
     answer = np.zeros((1,CLASSES),dtype=np.double)
-    answer[0,y_val-1] = 1.0
+    answer[0,y_val] = 1.0
     return answer
 for i in range(m):
     y_train_encoding[i,:] = encode(y_train[i])
@@ -173,7 +173,7 @@ def adaptive_learning(x_train_norm,y_train_bit,eta,layer_list,batch_size):
         if  diff_val < 0.00001 or total_iterations == 6000:
             break
     return theta
-# theta = adaptive_learning(x_train_normalize,y_train_encoding,0.1,[5,10],100)
+theta = gradient_descent(x_train_normalize,y_train_encoding,0.1,[5,5,10],100)
 def accuracy(theta,x_test,y_test,layers):
     outputs = output(x_test.T,theta,layers)
     final_answer = outputs[layers]
@@ -184,7 +184,7 @@ def accuracy(theta,x_test,y_test,layers):
         for j in range(row):
             if final_answer[j,test] > final_answer[max_index,test]:
                 max_index = j
-        if max_index + 1 == y_test[test]:
+        if max_index == y_test[test]:
             correct += 1
     return (100*correct/col)
 
@@ -195,17 +195,17 @@ def accuracy_comparator(y_test,y_pred):
             correct +=1
     return 100*correct/len(y_pred)
 
-neural_classifier = MLPClassifier(hidden_layer_sizes=(5,),activation='logistic',solver='adam',max_iter=100,random_state=1)
-neural_classifier.fit(x_train_normalize,y_train)
-y_scikit_prediction = neural_classifier.predict(x_test_normalize)
-print(f"Accuracy MLP: {accuracy_comparator(y_test,y_scikit_prediction)}")
-# print(accuracy(theta,x_test_normalize,y_test,2))
-# print(accuracy(theta,x_train_normalize,y_train,2))
+# neural_classifier = MLPClassifier(hidden_layer_sizes=(5,),activation='logistic',solver='adam',max_iter=100,random_state=1)
+# neural_classifier.fit(x_train_normalize,y_train)
+# y_scikit_prediction = neural_classifier.predict(x_test_normalize)
+# print(f"Accuracy MLP: {accuracy_comparator(y_test,y_scikit_prediction)}")
+print(accuracy(theta,x_test_normalize,y_test,3))
+print(accuracy(theta,x_train_normalize,y_train,3))
 end_time = time.time()
 print(f"Time Taken is : {end_time - start_time}")
-#accuracy on 5 coming with 6000 iterations 74.65% on test data and 77.78% on training data in 205 seconds
-#accuracy on 10 coming with 6000 iterations 77.34% on test data and 81.07% on training data in 324 seconds
-#accuracy on 15 coming with 6000 iterations 78.03% on test data and 82.065% on training data in 1026 seconds
+#accuracy on 5 coming with 6000 iterations 80.49% on test data and 82.90% on training data in 160 seconds
+#accuracy on 10 coming with 6000 iterations 85.27% on test data and 89.56% on training data in 197 seconds
+#accuracy on 15 coming with 6000 iterations 86.03% on test data and 90.748% on training data in 498 seconds
 #accuracy on 25 coming with 6000 iterations 79.2% on test data and 83.27% on training data in 1000 seconds
 
 def output_predictions(theta,x_test,layers):
@@ -227,4 +227,4 @@ def output_predictions(theta,x_test,layers):
 # disp_naive.plot()
 # plt.savefig("confusion_naive.png",dpi = 1000)
 
-#accuracy on 5 with adaptive learning is 67.37 on test and 68.43 on train in 214 seconds
+#accuracy on 5 with adaptive learning is 75.61 on test and 76.69 on train in 168 seconds
