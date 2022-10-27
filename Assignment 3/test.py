@@ -8,3 +8,4 @@ import matplotlib.pyplot as plt
 value = np.array(['1','?'])
 value[value == '?'] = 0
 print(value)
+print("September 23, 2002".split())
