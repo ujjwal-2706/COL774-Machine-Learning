@@ -88,17 +88,8 @@ def gradients(x_data,theta,layers,y_data):
         theta_gradients[l] = net_gradients[l] @ (np.vstack(((np.ones((1,col),dtype=np.double)),layer_output[l-1])).T)
     return theta_gradients
 
-def derivate_relu_number(x):
-    if x > 0:
-        return 1.0
-    elif x == 0:
-        return 0.5
-    else:
-        return 0
 def derivate_relu(x):
-    apply = np.vectorize(derivate_relu_number)
-    result = apply(x)
-    return result
+    return np.where(x>0,1,0.5)
 
 def gradient_relu(x_data,theta,layers,y_data):
     layer_output = output(x_data,theta,layers)
@@ -287,7 +278,7 @@ print(f"Time Taken is : {end_time - start_time}")
 #accuracy on 15 coming with 6000 iterations 86.03% on test data and 90.748% on training data in 498 seconds
 #accuracy on 25 coming with 6000 iterations 79.2% on test data and 83.27% on training data in 1000 seconds
 
-#accuracy on 78.92% on test data and 80.10 on train data with 2000 iterations 2240 seconds
+#accuracy on 79.92% on test data and 80.57 on train data with 2000 iterations 595 seconds
 
 def output_predictions(theta,x_test,layers):
     outputs = output(x_test.T,theta,layers)
