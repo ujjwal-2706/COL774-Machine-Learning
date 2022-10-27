@@ -7,9 +7,9 @@ from sklearn.model_selection import GridSearchCV
 from sklearn.ensemble import RandomForestClassifier
 import xgboost as xgb
 
-train_path = sys.argv[1] + "/train.csv"
-validation_path = sys.argv[2] + "/val.csv"
-test_path = sys.argv[3] + "/test.csv"
+train_path = sys.argv[1]
+validation_path = sys.argv[2] 
+test_path = sys.argv[3]
 output_path = sys.argv[4]
 question_part = sys.argv[5]
 
@@ -241,7 +241,7 @@ def run_part(part_number):
         x_train,y_train = split_data(train_load)
         x_test,y_test = split_data(test_load)
         x_validation,y_validation = split_data(validation_load)
-        params = {'n_estimators' : list(range(10,20,10)),'subsample':[0.1,0.2,0.3,0.4,0.5,0.6],'max_depth':list(range(4,11,1))}
+        params = {'n_estimators' : list(range(10,60,10)),'subsample':[0.1,0.2,0.3,0.4,0.5,0.6],'max_depth':list(range(4,11,1))}
         classifier = GridSearchCV(xgb.XGBClassifier(use_label_encoder= False),params)
         classifier.fit(x_train,y_train)
         y_train_prediction = classifier.predict(x_train)
