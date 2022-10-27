@@ -43,10 +43,49 @@ def filter_data(data_points):
     x_value = answer[:,:(col-2)]
     y_value = answer[:,col-2]
     return x_value,y_value
+
 #training data loaded and filtered
 x_train,y_train = filter_data(train_load)
 x_test,y_test = filter_data(test_load)
 x_validation,y_validation = filter_data(validation_load)
+
+def imputation(data_points,imputation_type):
+    if imputation_type == "median":
+        result = []
+        row,col = np.shape(data_points)
+        medians = np.median(x_train,axis=1)
+        for i in range(row):
+            for index in range(1,col):
+                if data_points[i,index] == '?':
+                    result.append(medians[index-1])
+                else:
+                    result.append(data_points[i,index])
+        new_rows = len(result) // (col-1)
+        answer = np.array(result)
+        answer = answer.reshape((new_rows,col-1))
+        x_value = np.zeros((new_rows,col-2))
+        y_value = np.zeros((new_rows,1))
+        x_value = answer[:,:(col-2)]
+        y_value = answer[:,col-2]
+        return x_value,y_value
+    elif imputation_type == "mode":
+        result = []
+        row,col = np.shape(data_points)
+        modes = np.apply_along_axis(lambda x: np.bincount(x).argmax(), axis=0, arr=x_train)
+        for i in range(row):
+            for index in range(1,col):
+                if data_points[i,index] == '?':
+                    result.append(modes[index-1])
+                else:
+                    result.append(data_points[i,index])
+        new_rows = len(result) // (col-1)
+        answer = np.array(result)
+        answer = answer.reshape((new_rows,col-1))
+        x_value = np.zeros((new_rows,col-2))
+        y_value = np.zeros((new_rows,1))
+        x_value = answer[:,:(col-2)]
+        y_value = answer[:,col-2]
+        return x_value,y_value
 
 def accuracy(original, prediction):
     total, = np.shape(original)
@@ -173,13 +212,36 @@ def accuracy(original, prediction):
 
 
 #part d code
-random_classifier = RandomForestClassifier(oob_score=True)
-random_classifier.fit(x_train,y_train)
-y_train_prediction = random_classifier.predict(x_train)
-y_test_prediction = random_classifier.predict(x_test)
-y_valid_prediction = random_classifier.predict(x_validation)
+# random_classifier = RandomForestClassifier(oob_score=True)
+# random_classifier.fit(x_train,y_train)
+# y_train_prediction = random_classifier.predict(x_train)
+# y_test_prediction = random_classifier.predict(x_test)
+# y_valid_prediction = random_classifier.predict(x_validation)
 
-print(f"Train accuracy is : {accuracy(y_train,y_train_prediction)}")
-print(f"Test accuracy is : {accuracy(y_test,y_test_prediction)}")
-print(f"Validation accuracy is : {accuracy(y_validation,y_valid_prediction)}")
-print(f"Out of bag accuracy is : {random_classifier.oob_score_}")
+# print(f"Train accuracy is : {accuracy(y_train,y_train_prediction)}")
+# print(f"Test accuracy is : {accuracy(y_test,y_test_prediction)}")
+# print(f"Validation accuracy is : {accuracy(y_validation,y_valid_prediction)}")
+# print(f"Out of bag accuracy is : {random_classifier.oob_score_}")
+
+
+#part e code
+#imputed data loaded and filtered
+# x_train_med,y_train_med = imputation(train_load,"median")
+# x_test_med,y_test_med = imputation(test_load,"median")
+# x_validation_med,y_validation_med = imputation(validation_load,"median")
+
+# x_train_mod,y_train_mod = imputation(train_load,"mode")
+# x_test_mod,y_test_mod = imputation(test_load,"mode")
+# x_validation_mod,y_validation_mod = imputation(validation_load,"mode")
+
+# classifier_med = tree.DecisionTreeClassifier()
+# classifier_med.fit(x_train_med,y_train_med)
+# y_train_prediction_med = classifier_med.predict(x_train_med)
+# y_test_prediction_med = classifier_med.predict(x_test_med)
+# y_validation_prediction_med = classifier_med.predict(x_validation_med)
+
+# print(f"Train accuracy is : {accuracy(y_train_med,y_train_prediction_med)}")
+# print(f"Test accuracy is : {accuracy(y_test_med,y_test_prediction_med)}")
+# print(f"Validation accuracy is : {accuracy(y_validation_med,y_validation_prediction_med)}")
+
+
