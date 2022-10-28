@@ -3,11 +3,13 @@ import numpy as np
 import pandas as pd
 import time
 from nltk.corpus import stopwords
-from sklearn.feature_extraction.text import CountVectorizer
+from sklearn.feature_extraction.text import TfidfVectorizer
 from sklearn import tree
+from scipy import sparse
 
 stop_words = set(stopwords.words('english'))
-vectorizer = CountVectorizer(max_features=30000)
+vectorizer_review = TfidfVectorizer()
+vectorizer_condition = TfidfVectorizer()
 
 start_time = time.time()
 train_path = sys.argv[1]
@@ -82,7 +84,7 @@ def date_break(date):
     elif month == 'december':
         month = 12
     return np.array([day,month,year])
-def load_proper_data(train_load):
+def load_proper_data(train_load,ifFit):
     m,features = np.shape(train_load)
     condition = train_load[:,0]
     review = train_load[:,1]
@@ -91,14 +93,22 @@ def load_proper_data(train_load):
     date = train_load[:,3]
     date_new = np.zeros((m,3))
     useful_count = train_load[:,4]
-    new_features = np.array(condition)
+    new_use = np.zeros((m,1))
     for i in range(m):
         condition[i] = clean_review(condition[i])
         review[i] = clean_review(review[i])
-        new_features[i] = condition[i] + " " + review[i] + " " + date[i].replace(',',' ') + " " + str(useful_count[i])
-        # date_new[i,:] = date_break(date[i])
+        date_new[i,:] = date_break(date[i])
         rating_new.append(int(rating[i]))
-    x_final = vectorizer.fit_transform(new_features)
+        new_use[i] = int(useful_count[i])
+    if ifFit:
+        condition_new = vectorizer_condition.fit_transform(condition)
+        review_new = vectorizer_review.fit_transform(review)
+    else:
+        condition_new = vectorizer_condition.transform(condition)
+        review_new = vectorizer_review.transform(review)
+    array_useful = sparse.csr_matrix(new_use)
+    array_date = sparse.csr_matrix(date_new)
+    x_final = sparse.hstack([condition_new,review_new,array_date,array_useful])
     return x_final,rating_new
 
 def output_file(file_path,output_answer,part_number):
@@ -119,13 +129,17 @@ def accuracy(original, prediction):
 
 def run_part(part_number):
     if part_number == 'a':
-        x_train,y_train = load_proper_data(train_load)
-        x_test,y_test = load_proper_data(test_load)
-        x_validation,y_validation = load_proper_data(validation_load)
+        x_train,y_train = load_proper_data(train_load,True)
+        x_test,y_test = load_proper_data(test_load,False)
+        x_validation,y_validation = load_proper_data(validation_load,False)
+        print("processing done")
+        print(x_test)
+        print(x_train)
+        print(x_validation)
         classifier = tree.DecisionTreeClassifier()
         classifier.fit(x_train,y_train)
-        y_train_prediction = classifier.predict(x_train)
         y_test_prediction = classifier.predict(x_test)
+        y_train_prediction = classifier.predict(x_train)
         y_validation_prediction = classifier.predict(x_validation)
         print(f"Train accuracy is : {accuracy(y_train,y_train_prediction)}")
         print(f"Test accuracy is : {accuracy(y_test,y_test_prediction)}")
