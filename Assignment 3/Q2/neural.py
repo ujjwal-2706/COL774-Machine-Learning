@@ -224,8 +224,8 @@ def gradient_descent_relu(x_train_norm,y_train_bit,eta,layer_list,batch_size):
         diff_val /= iteration
         diff_val /= layers
         total_iterations += 1
-        print(total_iterations)
-        if  diff_val < 0.00001 or total_iterations == 6000:
+        # print(total_iterations)
+        if  diff_val < 0.00001 or total_iterations == 12000:
             break
     return theta
 
@@ -309,8 +309,8 @@ def gradient_descent_bce(x_train_norm,y_train_bit,eta,layer_list,batch_size):
         diff_val /= iteration
         diff_val /= layers
         total_iterations += 1
-        print(total_iterations)
-        if diff_val < 0.0000001 or total_iterations == 6000:
+        # print(total_iterations)
+        if diff_val < 0.0000001 or total_iterations == 12000:
             break
     return theta
 def accuracy(theta,x_test,y_test,layers):
@@ -356,32 +356,62 @@ def output_file(file_path,output_answer,part_number):
     writing_file.close()
 
 def run_part(part_number):
-    if part_number == 'b':
+    if part_number == 'a':
         theta = gradient_descent(x_train_normalize,y_train_encoding,0.1,[25,10],100)
         print(f"Test accuracy : {accuracy(theta,x_test_normalize,y_test,2)}")
         print(f"Train accuracy : {accuracy(theta,x_train_normalize,y_train,2)}")
         y_answer = output_predictions(theta,x_test,2)
         output_file(output_path,y_answer,part_number)
+    elif part_number == 'b':
+        theta = gradient_descent(x_train_normalize,y_train_encoding,0.1,[25,10],100)
+        print(f"Test accuracy : {accuracy(theta,x_test_normalize,y_test,2)}")
+        print(f"Train accuracy : {accuracy(theta,x_train_normalize,y_train,2)}")
+        y_answer = output_predictions(theta,x_test,2)
+        output_file(output_path,y_answer,part_number)
+
+        #confusion matrix plot code
+        # cm_naive = confusion_matrix(y_test,y_answer)
+        # disp_naive = ConfusionMatrixDisplay(confusion_matrix=cm_naive)
+        # disp_naive.plot()
+        # plt.savefig("confusion_25.png",dpi = 1000)
     elif part_number == 'c':
         theta = adaptive_learning(x_train_normalize,y_train_encoding,0.1,[25,10],100)
         print(f"Test accuracy : {accuracy(theta,x_test_normalize,y_test,2)}")
         print(f"Train accuracy : {accuracy(theta,x_train_normalize,y_train,2)}")
         y_answer = output_predictions(theta,x_test,2)
         output_file(output_path,y_answer,part_number)
+
+        #confusion matrix plot code
+        # cm_naive = confusion_matrix(y_test,y_answer)
+        # disp_naive = ConfusionMatrixDisplay(confusion_matrix=cm_naive)
+        # disp_naive.plot()
+        # plt.savefig("confusion_25.png",dpi = 1000)
     elif part_number == 'd':
         theta = gradient_descent_relu(x_train_normalize,y_train_encoding,0.1,[100,100,10],100)
         print(f"Test accuracy : {accuracy(theta,x_test_normalize,y_test,3)}")
         print(f"Train accuracy : {accuracy(theta,x_train_normalize,y_train,3)}")
         y_answer = output_predictions(theta,x_test,3)
         output_file(output_path,y_answer,part_number)
+
+        #confusion matrix plot code
+        # cm_naive = confusion_matrix(y_test,y_answer)
+        # disp_naive = ConfusionMatrixDisplay(confusion_matrix=cm_naive)
+        # disp_naive.plot()
+        # plt.savefig("confusion_100_1010_relu.png",dpi = 1000)
+    elif part_number == 'e':
+        theta = gradient_descent_relu(x_train_normalize,y_train_encoding,0.1,[50,50,50,10],100)
+        print(f"Test accuracy : {accuracy(theta,x_test_normalize,y_test,4)}")
+        print(f"Train accuracy : {accuracy(theta,x_train_normalize,y_train,4)}")
+        y_answer = output_predictions(theta,x_test,4)
+        output_file(output_path,y_answer,part_number)
     elif part_number == 'f':
-        theta = gradient_descent_bce(x_train_normalize,y_train_encoding,0.1,[5,10],100)
-        print(f"Test accuracy : {accuracy(theta,x_test_normalize,y_test,2)}")
-        print(f"Train accuracy : {accuracy(theta,x_train_normalize,y_train,2)}")
-        y_answer = output_predictions(theta,x_test,2)
+        theta = gradient_descent_bce(x_train_normalize,y_train_encoding,0.1,[50,50,50,10],100)
+        print(f"Test accuracy : {accuracy(theta,x_test_normalize,y_test,4)}")
+        print(f"Train accuracy : {accuracy(theta,x_train_normalize,y_train,4)}")
+        y_answer = output_predictions(theta,x_test,4)
         output_file(output_path,y_answer,part_number)
     elif part_number == 'g':
-        neural_classifier = MLPClassifier(hidden_layer_sizes=(5,),activation='relu',solver='sgd',random_state=1,max_iter=300)
+        neural_classifier = MLPClassifier(hidden_layer_sizes=(50,50,50),activation='relu',solver='sgd',random_state=1,max_iter=300)
         neural_classifier.fit(x_train_normalize,y_train)
         y_test_answer = neural_classifier.predict(x_test_normalize)
         y_train_answer = neural_classifier.predict(x_train_normalize)
@@ -391,12 +421,6 @@ def run_part(part_number):
 run_part(question_part)
 end_time = time.time()
 print(f"Time Taken is : {end_time - start_time}")
-#accuracy on 5 coming with 6000 iterations 80.49% on test data and 82.90% on training data in 160 seconds
-#accuracy on 10 coming with 6000 iterations 85.27% on test data and 89.56% on training data in 197 seconds
-#accuracy on 15 coming with 6000 iterations 86.03% on test data and 90.748% on training data in 498 seconds
-#accuracy on 25 coming with 6000 iterations 79.2% on test data and 83.27% on training data in 1000 seconds
-
-#accuracy on 79.92% on test data and 80.57 on train data with 2000 iterations 595 seconds
 
 # prediction_test = output_predictions(theta,x_test,2)
 # cm_naive = confusion_matrix(y_test,prediction_test)
@@ -404,4 +428,3 @@ print(f"Time Taken is : {end_time - start_time}")
 # disp_naive.plot()
 # plt.savefig("confusion_naive.png",dpi = 1000)
 
-#accuracy on 5 with adaptive learning is 75.61 on test and 76.69 on train in 168 seconds

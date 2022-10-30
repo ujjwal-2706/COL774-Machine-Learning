@@ -135,18 +135,13 @@ def output_file(file_path,output_answer,part_number):
 
 def split_data(train_load):
     m,features_1 = np.shape(train_load)
-    answer = []
+    result = np.empty((m,features_1),dtype=int)
     for i in range(m):
         for j in range(1,features_1):
-            if train_load[i,j] == '?':
-                answer.append(0)
-            else:
-                answer.append(int(train_load[i,j]))
-    result = np.array(answer)
-    result = result.reshape((m,features_1-1))
-    result.astype(int)
-    y_train = result[:,features_1-2]
-    x_train = result[:,:features_1-2]
+            if train_load[i,j] != '?':
+                result[i,j] = int(train_load[i,j])
+    y_train = result[:,features_1-1]
+    x_train = result[:,1:features_1-1]
     return (x_train,y_train)
 
 def run_part(part_number):
@@ -163,6 +158,8 @@ def run_part(part_number):
         print(f"Test accuracy is : {accuracy(y_test,y_test_prediction)}")
         print(f"Validation accuracy is : {accuracy(y_validation,y_validation_prediction)}")
         output_file(output_path,y_test_prediction,'a')
+        # tree.plot_tree(classifier,filled=True,label='all')
+        # plt.show()
     elif part_number == 'b':
         x_train,y_train = filter_data(train_load)
         x_test,y_test = filter_data(test_load)
@@ -173,10 +170,13 @@ def run_part(part_number):
         y_train_prediction = classifier.predict(x_train)
         y_test_prediction = classifier.predict(x_test)
         y_validation_prediction = classifier.predict(x_validation)
+        # print(classifier.best_params_)
         print(f"Train accuracy is : {accuracy(y_train,y_train_prediction)}")
         print(f"Test accuracy is : {accuracy(y_test,y_test_prediction)}")
         print(f"Validation accuracy is : {accuracy(y_validation,y_validation_prediction)}")
         output_file(output_path,y_test_prediction,'b')
+        # tree.plot_tree(classifier.best_estimator_,filled=True,label='all')
+        # plt.show()
     elif part_number == 'c':
         x_train,y_train = filter_data(train_load)
         x_test,y_test = filter_data(test_load)
@@ -228,21 +228,24 @@ def run_part(part_number):
         x_test_mod,y_test_mod = imputation(test_load,"mode",x_train)
         x_validation_mod,y_validation_mod = imputation(validation_load,"mode",x_train)
 
-        classifier_mod = tree.DecisionTreeClassifier()
-        classifier_mod.fit(x_train_mod,y_train_mod)
-        y_train_prediction_mod = classifier_mod.predict(x_train_mod)
-        y_test_prediction_mod = classifier_mod.predict(x_test_mod)
-        y_validation_prediction_mod = classifier_mod.predict(x_validation_mod)
-        print(f"Train accuracy is : {accuracy(y_train_mod,y_train_prediction_mod)}")
-        print(f"Test accuracy is : {accuracy(y_test_mod,y_test_prediction_mod)}")
-        print(f"Validation accuracy is : {accuracy(y_validation_mod,y_validation_prediction_mod)}")
-        output_file(output_path,y_test_prediction_mod,'e')
+        params = {'n_estimators': [200,300,400], 'max_features': ['sqrt','log2'],'min_samples_split': list(range(2,15))}
+        classifier = GridSearchCV(RandomForestClassifier(oob_score=True),params)
+        classifier.fit(x_train_mod,y_train_mod)
+        y_train_prediction = classifier.predict(x_train_mod)
+        y_test_prediction = classifier.predict(x_test_mod)
+        y_validation_prediction = classifier.predict(x_validation_mod)
+        print(f"Train accuracy is : {accuracy(y_train_mod,y_train_prediction)}")
+        print(f"Test accuracy is : {accuracy(y_test_mod,y_test_prediction)}")
+        print(f"Validation accuracy is : {accuracy(y_validation_mod,y_validation_prediction)}")
+        print(f"Out of Bag accuracy is : {classifier.best_estimator_.oob_score_}")
+        output_file(output_path,y_test_prediction,'e')
+
     elif part_number == 'f':
         x_train,y_train = split_data(train_load)
         x_test,y_test = split_data(test_load)
         x_validation,y_validation = split_data(validation_load)
         params = {'n_estimators' : list(range(10,60,10)),'subsample':[0.1,0.2,0.3,0.4,0.5,0.6],'max_depth':list(range(4,11,1))}
-        classifier = GridSearchCV(xgb.XGBClassifier(use_label_encoder= False),params)
+        classifier = GridSearchCV(xgb.XGBClassifier(use_label_encoder= False,booster = 'gbtree'),params)
         classifier.fit(x_train,y_train)
         y_train_prediction = classifier.predict(x_train)
         y_test_prediction = classifier.predict(x_test)
